@@ -1,8 +1,8 @@
 export const siteConfig = {
   couple: {
-    name1: 'Gann',
-    name2: 'Som',
-    fullNames: 'Gann & Som',
+    name1: 'Som',
+    name2: 'Gann',
+    fullNames: 'Som & Gann',
   },
   event: {
     date: '28 Mar 2026',
@@ -24,7 +24,7 @@ export const siteConfig = {
     { time: '21:00', title: 'Event Ends', description: 'Farewell and safe journey' },
   ],
   contact: {
-    email: 'wedding@example.com',
-    phone: '+66 XX XXX XXXX',
+    email: 'Wihok.ped@outlook.com',
+    phone: '+66 94-616-8914',
   },
 };

@@ -131,7 +131,7 @@ export function RSVPSection() {
   return (
     <Section id="rsvp">
       <SectionHeading subtitle="Let us know if you can join us">
-        RSVP
+      Celebrate With Us
       </SectionHeading>
 
       <div className="max-w-xl mx-auto">
@@ -140,7 +140,7 @@ export function RSVPSection() {
             {step === 'code' && (
               <div className="space-y-4">
                 <p className="text-center text-gray-600 mb-6">
-                  Please enter your invitation code to RSVP
+                  Please enter your invitation code
                 </p>
                 <Input
                   label="Invitation Code"

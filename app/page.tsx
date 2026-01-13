@@ -13,8 +13,8 @@ export default function Home() {
       <Navigation />
       <HeroSection />
       <DetailsSection />
-      <ScheduleSection />
       <LocationSection />
+      <ScheduleSection />
       <RSVPSection />
       <ContactSection />
       <Footer />

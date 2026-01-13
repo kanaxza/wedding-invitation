@@ -13,10 +13,8 @@ export function Section({
   className = '',
   background = 'white',
 }: SectionProps) {
-  const bgColor = background === 'gray' ? 'bg-gray-50' : 'bg-white';
-
   return (
-    <section id={id} className={`section-padding ${bgColor} ${className}`}>
+    <section id={id} className={`section-padding ${className}`} style={{ backgroundColor: '#FBF7F0' }}>
       <div className="max-w-4xl mx-auto">{children}</div>
     </section>
   );

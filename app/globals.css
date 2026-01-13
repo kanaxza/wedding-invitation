@@ -9,7 +9,8 @@
   }
 
   body {
-    @apply bg-white text-gray-900 antialiased;
+    @apply text-gray-900 antialiased;
+    background-color: #FBF7F0;
   }
 
   html {

@@ -1,0 +1,86 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2867
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 <?xml version="1.0" encoding="UTF-8"?>\
+<svg width="1200" height="1400" viewBox="0 0 1200 1400" xmlns="http://www.w3.org/2000/svg">\
+  <defs>\
+    <!-- Load Great Vibes font -->\
+    <style>\
+      @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');\
+    </style>\
+\
+    <!-- Gold color -->\
+    <style>\
+      .gold \{ fill: #B18A3D; \}\
+      .thin \{ stroke: #B18A3D; stroke-width: 3; fill: none; \}\
+      .title \{ font-family: 'Great Vibes', cursive; fill: #B18A3D; \}\
+      .small \{ font-family: 'Montserrat', Arial, sans-serif; letter-spacing: 3px; fill:#B18A3D; \}\
+    </style>\
+  </defs>\
+\
+  <!-- Background -->\
+  <rect width="100%" height="100%" fill="#FBF7F0"/>\
+\
+  <!-- Wreath (simple symmetric leaves) -->\
+  <g transform="translate(600 520)">\
+    <!-- Left leaves -->\
+    <g transform="scale(-1,1)">\
+      <path class="thin" d="M0,0 C-180,-120 -260,-260 -240,-380" />\
+      <path class="thin" d="M-40,-40 C-120,-140 -160,-200 -150,-260" />\
+      <path class="thin" d="M-80,-90 C-160,-200 -190,-260 -180,-320" />\
+    </g>\
+\
+    <!-- Right leaves -->\
+    <path class="thin" d="M0,0 C180,-120 260,-260 240,-380" />\
+    <path class="thin" d="M40,-40 C120,-140 160,-200 150,-260" />\
+    <path class="thin" d="M80,-90 C160,-200 190,-260 180,-320" />\
+  </g>\
+\
+  <!-- Monogram SG (S leads) -->\
+  <text x="600" y="520" text-anchor="middle"\
+        font-size="240" font-family="Playfair Display, serif"\
+        class="gold">\
+    SG\
+  </text>\
+\
+  <!-- Heart + Arrow -->\
+  <g transform="translate(600 650)">\
+    <!-- Arrow -->\
+    <line x1="-220" y1="0" x2="220" y2="0" class="thin"/>\
+    <polygon points="220,-8 245,0 220,8" fill="#B18A3D"/>\
+    <polygon points="-220,-8 -245,0 -220,8" fill="#B18A3D"/>\
+\
+    <!-- Heart -->\
+    <path d="\
+      M0,30\
+      C-30,5 -60,-10 -60,-40\
+      C-60,-70 -30,-90 0,-60\
+      C30,-90 60,-70 60,-40\
+      C60,-10 30,5 0,30 Z"\
+      fill="none" stroke="#B18A3D" stroke-width="3"/>\
+  </g>\
+\
+  <!-- Names (Great Vibes) -->\
+  <text x="600" y="820" text-anchor="middle"\
+        font-size="140"\
+        class="title">\
+    Som &amp; Gann\
+  </text>\
+\
+  <!-- THE WEDDING -->\
+  <g transform="translate(600 900)">\
+    <line x1="-220" y1="0" x2="-60" y2="0" class="thin"/>\
+    <line x1="60" y1="0" x2="220" y2="0" class="thin"/>\
+\
+    <text x="0" y="10" text-anchor="middle"\
+          font-size="28"\
+          class="small">\
+      THE WEDDING\
+    </text>\
+  </g>\
+\
+</svg>}

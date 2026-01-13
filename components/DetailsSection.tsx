@@ -27,33 +27,10 @@ export function DetailsSection() {
                   />
                 </svg>
               </div>
-              <h3 className="font-semibold text-lg mb-2">Date</h3>
+              <h3 className="font-semibold text-lg mb-2">Date & Time</h3>
               <p className="text-gray-600">{siteConfig.event.date}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent>
-            <div className="text-center">
-              <div className="text-primary-600 mb-3">
-                <svg
-                  className="w-12 h-12 mx-auto"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Time</h3>
-              <p className="text-gray-600">{siteConfig.event.time}</p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-gray-600 mt-1">{siteConfig.event.time}</p>
+              <p className="text-sm text-gray-500 mt-2">
                 Registration from {siteConfig.event.registrationTime}
               </p>
             </div>
@@ -89,6 +66,30 @@ export function DetailsSection() {
               <p className="text-sm text-gray-500 mt-1">
                 {siteConfig.event.room}
               </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <div className="text-center">
+              <div className="text-primary-600 mb-3">
+                <svg
+                  className="w-12 h-12 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Dress Code</h3>
+              <p className="text-gray-600">{siteConfig.event.dressCode}</p>
             </div>
           </CardContent>
         </Card>
