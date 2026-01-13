@@ -14,10 +14,9 @@ export const siteConfig = {
     city: 'Bangkok',
     room: 'Jupiter Room',
     mapsLink: 'https://maps.app.goo.gl/qr4qK9MUHgaahaS29',
-    dressCode: 'Modern Formal',
+    dressCode: 'Be your style, just come and celebrate with us.',
   },
   schedule: [
-    { time: '17:30', title: 'Registration', description: 'Guest arrival and welcome' },
     { time: '18:00', title: 'Reception Begins', description: 'Ceremony and welcome toast' },
     { time: '19:00', title: 'Dinner', description: 'Wedding dinner service' },
     { time: '20:30', title: 'Photo & Celebration', description: 'Photos with the couple' },

@@ -23,9 +23,7 @@ export function Navigation() {
           <div className="hidden md:flex space-x-8">
             {[
               { id: 'details', label: 'Details' },
-              { id: 'schedule', label: 'Schedule' },
               { id: 'location', label: 'Location' },
-              { id: 'rsvp', label: 'RSVP' },
               { id: 'contact', label: 'Contact' },
             ].map((item) => (
               <button

@@ -28,44 +28,7 @@ export function DetailsSection() {
                 </svg>
               </div>
               <h3 className="font-semibold text-lg mb-2">Date & Time</h3>
-              <p className="text-gray-600">{siteConfig.event.date}</p>
-              <p className="text-gray-600 mt-1">{siteConfig.event.time}</p>
-              <p className="text-sm text-gray-500 mt-2">
-                Registration from {siteConfig.event.registrationTime}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent>
-            <div className="text-center">
-              <div className="text-primary-600 mb-3">
-                <svg
-                  className="w-12 h-12 mx-auto"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Venue</h3>
-              <p className="text-gray-600">{siteConfig.event.venue}</p>
-              <p className="text-sm text-gray-500 mt-1">
-                {siteConfig.event.room}
-              </p>
+              <p className="text-gray-600">{siteConfig.event.date} at {siteConfig.event.time}</p>
             </div>
           </CardContent>
         </Card>
@@ -90,6 +53,32 @@ export function DetailsSection() {
               </div>
               <h3 className="font-semibold text-lg mb-2">Dress Code</h3>
               <p className="text-gray-600">{siteConfig.event.dressCode}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <div className="text-center">
+              <div className="text-primary-600 mb-3">
+                <svg
+                  className="w-12 h-12 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                  />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Cashless Society</h3>
+              <p className="text-gray-600 text-sm">Your presence is the greatest gift.</p>
+              <p className="text-gray-600 text-sm">For those who wish to support us further,</p>
+              <p className="text-gray-600 text-sm">Cash or bank transfer is sincerely appreciated.</p>
             </div>
           </CardContent>
         </Card>

@@ -1,9 +1,8 @@
 import { Navigation } from '@/components/Navigation';
 import { HeroSection } from '@/components/HeroSection';
 import { DetailsSection } from '@/components/DetailsSection';
-import { ScheduleSection } from '@/components/ScheduleSection';
 import { LocationSection } from '@/components/LocationSection';
-import { RSVPSection } from '@/components/RSVPSection';
+import { PhotoGallery } from '@/components/PhotoGallery';
 import { ContactSection } from '@/components/ContactSection';
 import { Footer } from '@/components/Footer';
 
@@ -14,8 +13,7 @@ export default function Home() {
       <HeroSection />
       <DetailsSection />
       <LocationSection />
-      <ScheduleSection />
-      <RSVPSection />
+      <PhotoGallery />
       <ContactSection />
       <Footer />
     </main>
