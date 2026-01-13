@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Section, SectionHeading } from './Section';
 import { Card, CardContent } from './Card';
 import { Button } from './Button';
@@ -17,17 +18,85 @@ interface RSVPData {
 }
 
 export function RSVPSection() {
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>('code');
   const [code, setCode] = useState('');
+  const [inviteeName, setInviteeName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<RSVPData>({
     name: '',
     phone: '',
     attending: true,
-    guestsCount: 1,
+    guestsCount: 0,
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Auto-verify code from URL parameter
+  useEffect(() => {
+    const urlCode = searchParams.get('code');
+    if (urlCode && !code) {
+      setCode(urlCode.toUpperCase());
+      // Trigger verification after setting the code
+      verifyCodeFromUrl(urlCode.toUpperCase());
+    }
+  }, [searchParams]);
+
+  const verifyCodeFromUrl = async (codeToVerify: string) => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/invitations/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: codeToVerify.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (data.ok && data.status === 'active') {
+        const invitationResponse = await fetch(
+          `/api/invitations/verify`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: codeToVerify.trim(), includeDetails: true }),
+          }
+        );
+        
+        if (invitationResponse.ok) {
+          const invitationData = await invitationResponse.json();
+          setInviteeName(invitationData.inviteeName || '');
+        }
+
+        const rsvpResponse = await fetch(
+          `/api/rsvp?code=${encodeURIComponent(codeToVerify.trim())}`
+        );
+        if (rsvpResponse.ok) {
+          const rsvpData = await rsvpResponse.json();
+          if (rsvpData.rsvp) {
+            const followerCount = rsvpData.rsvp.guestsCount ? Math.max(0, rsvpData.rsvp.guestsCount - 1) : 0;
+            setFormData({
+              name: rsvpData.rsvp.name,
+              phone: rsvpData.rsvp.phone,
+              attending: rsvpData.rsvp.attending,
+              guestsCount: followerCount,
+            });
+          }
+        }
+        setStep('form');
+      } else if (data.status === 'disabled') {
+        setError('This invitation code has been deactivated. Please contact us for assistance.');
+      } else {
+        setError('Invalid invitation code from URL.');
+      }
+    } catch (err) {
+      setError('Network error. Please check your connection and try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const verifyCode = async () => {
     if (!code.trim()) {
@@ -49,6 +118,21 @@ export function RSVPSection() {
 
       if (data.ok) {
         if (data.status === 'active') {
+          // Fetch invitation details to get invitee name
+          const invitationResponse = await fetch(
+            `/api/invitations/verify`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ code: code.trim(), includeDetails: true }),
+            }
+          );
+          
+          if (invitationResponse.ok) {
+            const invitationData = await invitationResponse.json();
+            setInviteeName(invitationData.inviteeName || '');
+          }
+
           // Check if RSVP already exists
           const rsvpResponse = await fetch(
             `/api/rsvp?code=${encodeURIComponent(code.trim())}`
@@ -57,11 +141,13 @@ export function RSVPSection() {
             const rsvpData = await rsvpResponse.json();
             if (rsvpData.rsvp) {
               // Prefill form with existing data
+              // Convert total guests back to follower count (subtract 1 for the invitee)
+              const followerCount = rsvpData.rsvp.guestsCount ? Math.max(0, rsvpData.rsvp.guestsCount - 1) : 0;
               setFormData({
                 name: rsvpData.rsvp.name,
                 phone: rsvpData.rsvp.phone,
                 attending: rsvpData.rsvp.attending,
-                guestsCount: rsvpData.rsvp.guestsCount,
+                guestsCount: followerCount,
               });
             }
           }
@@ -86,10 +172,8 @@ export function RSVPSection() {
   const submitRSVP = async () => {
     // Validate
     const errors: Record<string, string> = {};
-    if (!formData.name.trim()) errors.name = 'Full name is required';
-    if (!formData.phone.trim()) errors.phone = 'Phone number is required';
-    if (formData.attending && (!formData.guestsCount || formData.guestsCount < 1)) {
-      errors.guestsCount = 'Please specify number of guests (minimum 1)';
+    if (formData.attending && (formData.guestsCount === null || formData.guestsCount < 0)) {
+      errors.guestsCount = 'Please specify number of followers';
     }
 
     if (Object.keys(errors).length > 0) {
@@ -107,10 +191,10 @@ export function RSVPSection() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code: code.trim(),
-          name: formData.name.trim(),
-          phone: formData.phone.trim(),
+          name: formData.name.trim() || inviteeName,
+          phone: formData.phone.trim() || '-',
           attending: formData.attending,
-          guestsCount: formData.attending ? formData.guestsCount : null,
+          guestsCount: formData.attending ? (formData.guestsCount || 0) + 1 : null,
         }),
       });
 
@@ -163,37 +247,17 @@ export function RSVPSection() {
 
             {step === 'form' && (
               <div className="space-y-4">
-                <p className="text-center text-sm text-green-600 mb-4">
-                  ✓ Code verified successfully
-                </p>
-
-                <Input
-                  label="Full Name *"
-                  placeholder="Your full name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  error={formErrors.name}
-                  disabled={isLoading}
-                />
-
-                <Input
-                  label="Phone Number *"
-                  placeholder="Your phone number"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  error={formErrors.phone}
-                  disabled={isLoading}
-                />
+                {inviteeName && (
+                  <p className="text-center text-lg font-semibold mb-4" style={{ color: '#B18A3D' }}>
+                    Hi, {inviteeName}!
+                  </p>
+                )}
 
                 <Select
                   label="Will you attend? *"
                   options={[
-                    { value: 'true', label: 'Attending' },
-                    { value: 'false', label: 'Regret' },
+                    { value: 'true', label: 'Yeah! See you.' },
+                    { value: 'false', label: "Sorry, I can't make it." },
                   ]}
                   value={formData.attending.toString()}
                   onChange={(e) =>
@@ -207,16 +271,21 @@ export function RSVPSection() {
                 />
 
                 {formData.attending && (
-                  <Input
-                    label="Number of Guests *"
-                    type="number"
-                    min="1"
-                    placeholder="1"
-                    value={formData.guestsCount || ''}
+                  <Select
+                    label="Number of Followers *"
+                    options={[
+                      { value: '0', label: '0 (Just me)' },
+                      { value: '1', label: '1' },
+                      { value: '2', label: '2' },
+                      { value: '3', label: '3' },
+                      { value: '4', label: '4' },
+                      { value: '5', label: '5' },
+                    ]}
+                    value={formData.guestsCount?.toString() || '0'}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        guestsCount: parseInt(e.target.value) || null,
+                        guestsCount: parseInt(e.target.value) || 0,
                       })
                     }
                     error={formErrors.guestsCount}
@@ -236,6 +305,7 @@ export function RSVPSection() {
                       setStep('code');
                       setError('');
                       setFormErrors({});
+                      // Keep the code in the input box
                     }}
                     disabled={isLoading}
                   >
@@ -246,61 +316,62 @@ export function RSVPSection() {
                     onClick={submitRSVP}
                     disabled={isLoading}
                   >
-                    {isLoading ? <LoadingSpinner size="sm" /> : 'Submit RSVP'}
+                    {isLoading ? <LoadingSpinner size="sm" /> : 'OK'}
                   </Button>
                 </div>
               </div>
             )}
 
             {step === 'success' && (
-              <div className="text-center py-8 space-y-4">
-                <div className="text-green-600 mb-4">
-                  <svg
-                    className="w-16 h-16 mx-auto"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+              <div className="text-center py-8 space-y-4 relative">
+                {formData.attending && (
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    {[...Array(30)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="absolute w-2 h-2 rounded-full animate-firework"
+                        style={{
+                          left: '50%',
+                          top: '30%',
+                          background: ['#B18A3D', '#C99A4D', '#8B6B29', '#D4AF37', '#FFD700'][i % 5],
+                          animationDelay: `${Math.random() * 0.5}s`,
+                          '--tx': `${(Math.random() - 0.5) * 400}px`,
+                          '--ty': `${(Math.random() - 0.5) * 400}px`,
+                        } as React.CSSProperties}
+                      />
+                    ))}
+                  </div>
+                )}
+                <div className="mb-4 relative z-10 text-6xl">
+                  {formData.attending ? '🎉' : '😢'}
                 </div>
                 <h3 className="text-2xl font-semibold text-gray-900">
-                  Thank You!
+                  {formData.attending ? 'See you soon!' : "We'll miss you!"}
                 </h3>
                 <p className="text-gray-600">
                   {formData.attending
                     ? "We're excited to celebrate with you!"
-                    : 'Thank you for letting us know.'}
+                    : "But totally understand. Let's catch up soon!"}
                 </p>
-                {formData.attending && formData.guestsCount && (
-                  <p className="text-sm text-gray-500">
-                    Party size: {formData.guestsCount}{' '}
-                    {formData.guestsCount === 1 ? 'guest' : 'guests'}
-                  </p>
-                )}
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => {
-                    setStep('code');
-                    setCode('');
-                    setFormData({
-                      name: '',
-                      phone: '',
-                      attending: true,
-                      guestsCount: 1,
-                    });
-                    setError('');
-                    setFormErrors({});
-                  }}
-                >
-                  Submit Another RSVP
-                </Button>
+                <div className="mt-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setStep('code');
+                      // Keep the code for reuse
+                      setFormData({
+                        name: '',
+                        phone: '',
+                        attending: true,
+                        guestsCount: 0,
+                      });
+                      setError('');
+                      setFormErrors({});
+                    }}
+                  >
+                    Back
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>

@@ -11,7 +11,7 @@ export function Navigation() {
   };
 
   return (
-    <nav className="hidden md:block fixed top-0 left-0 right-0 backdrop-blur-sm border-b border-gray-200 z-50" style={{ backgroundColor: 'rgba(251, 247, 240, 0.95)' }}>
+    <nav className="hidden fixed top-0 left-0 right-0 backdrop-blur-sm border-b border-gray-200 z-50" style={{ backgroundColor: 'rgba(251, 247, 240, 0.95)' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <button
@@ -23,7 +23,8 @@ export function Navigation() {
           <div className="hidden md:flex space-x-8">
             {[
               { id: 'details', label: 'Details' },
-              { id: 'location', label: 'Location' },
+              { id: 'rsvp', label: 'RSVP' },
+              { id: 'gallery', label: 'Gallery' },
               { id: 'contact', label: 'Contact' },
             ].map((item) => (
               <button

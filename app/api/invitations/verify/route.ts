@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       status: invitation.status,
+      inviteeName: invitation.note,
     });
   } catch (error) {
     console.error('Error verifying invitation code:', error);

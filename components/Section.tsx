@@ -28,7 +28,7 @@ interface SectionHeadingProps {
 export function SectionHeading({ children, subtitle }: SectionHeadingProps) {
   return (
     <div className="text-center mb-12">
-      <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2">
+      <h2 className="text-3xl md:text-4xl font-serif font-bold mb-2" style={{ color: '#B18A3D' }}>
         {children}
       </h2>
       {subtitle && (

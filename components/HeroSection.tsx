@@ -15,7 +15,7 @@ export function HeroSection() {
   return (
     <section
       id="hero"
-      className="h-screen flex items-center justify-center px-4 pt-8"
+      className="h-screen flex items-center justify-center px-4"
       style={{ backgroundColor: '#FBF7F0' }}
     >
       <div className="text-center max-w-4xl mx-auto w-full relative">
@@ -26,7 +26,7 @@ export function HeroSection() {
             alt="Wedding Logo" 
             width={800} 
             height={800}
-            className="w-[85%] md:w-[70%] max-w-lg object-cover rounded-full drop-shadow-2xl aspect-square"
+            className="w-[85%] md:w-[70%] max-w-lg object-cover rounded-full md:rounded-lg drop-shadow-2xl aspect-square"
             priority
           />
         </div>
@@ -47,8 +47,21 @@ export function HeroSection() {
           {siteConfig.event.venue}, {siteConfig.event.city}
         </div>
         
+        {/* RSVP Button */}
+        <div className="mb-8">
+          <Button
+            size="lg"
+            onClick={() => scrollToSection('rsvp')}
+          >
+            Respond Here
+          </Button>
+        </div>
+        
         {/* Scroll Indicator */}
-        <div className="mt-12 animate-bounce flex flex-col items-center">
+        <div 
+          className="mt-12 animate-bounce flex flex-col items-center cursor-pointer"
+          onClick={() => scrollToSection('details')}
+        >
           <svg
             className="w-6 h-6"
             fill="none"

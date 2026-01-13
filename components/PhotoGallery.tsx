@@ -27,7 +27,7 @@ export function PhotoGallery() {
       setOffset((prev) => {
         const newOffset = prev - 1;
         const containerWidth = containerRef.current?.offsetWidth || 0;
-        const photoWidth = containerWidth / 3; // 3 photos visible at once
+        const photoWidth = containerWidth / 2; // 2 photos visible at once for bigger display
         const totalWidth = photoWidth * photos.length;
         
         // Reset to middle set when reaching end
@@ -55,7 +55,7 @@ export function PhotoGallery() {
           {duplicatedPhotos.map((photo, index) => (
             <div
               key={`${photo.id}-${index}`}
-              className="flex-shrink-0 w-1/3 px-2"
+              className="flex-shrink-0 w-1/2 px-2"
             >
               <div className="relative aspect-[3/4] overflow-hidden rounded-lg shadow-lg">
                 <Image

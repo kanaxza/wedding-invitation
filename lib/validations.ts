@@ -17,13 +17,13 @@ export const rsvpFormSchema = z.object({
 }).refine(
   (data) => {
     // If attending, guestsCount must be provided and >= 1
-    if (data.attending && (!data.guestsCount || data.guestsCount < 1)) {
+    if (data.attending && (data.guestsCount === null || data.guestsCount < 1)) {
       return false;
     }
     return true;
   },
   {
-    message: 'Please specify number of guests (minimum 1)',
+    message: 'Please specify number of followers',
     path: ['guestsCount'],
   }
 );
