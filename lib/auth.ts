@@ -14,8 +14,9 @@ export async function setAdminAuth() {
   cookieStore.set(ADMIN_SESSION_COOKIE, ADMIN_SESSION_VALUE, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: 60 * 60 * 24, // 24 hours
+    path: '/',
   });
 }
 
