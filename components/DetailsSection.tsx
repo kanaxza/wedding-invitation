@@ -6,8 +6,10 @@ import { Button } from './Button';
 import { siteConfig } from '@/lib/siteConfig';
 import { useState } from 'react';
 import Image from 'next/image';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export function DetailsSection() {
+  const { t } = useLanguage();
   const [showQR, setShowQR] = useState(false);
   
   const addToCalendar = () => {
@@ -46,10 +48,11 @@ export function DetailsSection() {
 
   return (
     <Section id="details" background="gray">
-      <SectionHeading subtitle="Join us for our special day">
-        Event Details
+      <SectionHeading subtitle={t('eventDetailsSubtitle')}>
+        {t('eventDetails')}
       </SectionHeading>
       <div className="grid md:grid-cols-3 gap-6 mb-8">
+        {/* Date & Time Card */}
         <Card>
           <CardContent>
             <div className="text-center">
@@ -68,20 +71,21 @@ export function DetailsSection() {
                   />
                 </svg>
               </div>
-              <h3 className="font-semibold text-lg mb-2">Date & Time</h3>
-              <p className="text-gray-600">{siteConfig.event.date} at {siteConfig.event.time}</p>
+              <h3 className="font-semibold text-lg mb-2">{t('dateTime')}</h3>
+              <p className="text-gray-600">{t('eventDate')} at {t('eventTime')}</p>
               <Button
                 size="sm"
                 variant="outline"
                 className="mt-4"
                 onClick={addToCalendar}
               >
-                Add to Calendar
+                {t('addToCalendar')}
               </Button>
             </div>
           </CardContent>
         </Card>
 
+        {/* Location Card */}
         <Card>
           <CardContent>
             <div className="text-center">
@@ -96,16 +100,31 @@ export function DetailsSection() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
               </div>
-              <h3 className="font-semibold text-lg mb-2">Dress Code</h3>
-              <p className="text-gray-600">{siteConfig.event.dressCode}</p>
+              <h3 className="font-semibold text-lg mb-2">{t('venue')}</h3>
+              <p className="text-gray-600 text-sm">{t('city')}</p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-4"
+                onClick={() => window.open(siteConfig.event.mapsLink, '_blank')}
+              >
+                {t('googleMaps')}
+              </Button>
             </div>
           </CardContent>
         </Card>
 
+        {/* Cashless Society Card */}
         <Card>
           <CardContent>
             <div className="text-center">
@@ -124,17 +143,52 @@ export function DetailsSection() {
                   />
                 </svg>
               </div>
-              <h3 className="font-semibold text-lg mb-2">Cashless Society</h3>
-              <p className="text-gray-600 text-sm">Your presence is the greatest gift.</p>
-              <p className="text-gray-600 text-sm">For those who wish to support us further,</p>
-              <p className="text-gray-600 text-sm">Cash or bank transfer is sincerely appreciated.</p>
+              <h3 className="font-semibold text-lg mb-2">{t('cashlessSociety')}</h3>
+              <p className="text-gray-600 text-sm">{t('cashlessText1')}</p>
+              <p className="text-gray-600 text-sm">{t('cashlessText2')}</p>
+              <p className="text-gray-600 text-sm">{t('cashlessText3')}</p>
               <Button
                 size="sm"
+                variant="outline"
                 className="mt-4"
                 onClick={() => setShowQR(true)}
               >
-                QR PromptPay
+                {t('qrPromptPay')}
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Dress Code Card */}
+        <Card>
+          <CardContent>
+            <div className="text-center">
+              <div className="mb-3" style={{ color: '#A67C38' }}>
+                <svg
+                  className="w-12 h-12 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">{t('dressCode')}</h3>
+              {/* LGBTQ+ Pride Colors (Pastel with 3D effect) */}
+              <div className="flex justify-center gap-1 mb-3">
+                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #FFD4D9, #FFB3BA)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(0,0,0,0.1)' }} title="Pastel Red"></div>
+                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #FFF0D4, #FFDFBA)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(0,0,0,0.1)' }} title="Pastel Orange"></div>
+                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #FFFFD4, #FFFFBA)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(0,0,0,0.1)' }} title="Pastel Yellow"></div>
+                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #D4FFE0, #BAFFC9)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(0,0,0,0.1)' }} title="Pastel Green"></div>
+                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #D4F0FF, #BAE1FF)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(0,0,0,0.1)' }} title="Pastel Blue"></div>
+                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #F0D4F4, #E0BBE4)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(0,0,0,0.1)' }} title="Pastel Purple"></div>
+              </div>
+              <p className="text-gray-600">{t('dressCodeDescription')}</p>
             </div>
           </CardContent>
         </Card>
@@ -175,47 +229,6 @@ export function DetailsSection() {
           </div>
         </div>
       )}
-
-      {/* Location Card */}
-      <Card>
-        <CardContent>
-          <div className="text-center space-y-6">
-            <div className="mb-3" style={{ color: '#A67C38' }}>
-              <svg
-                className="w-12 h-12 mx-auto"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                {siteConfig.event.venue}
-              </h3>
-            </div>
-
-            <Button
-              size="sm"
-              onClick={() => window.open(siteConfig.event.mapsLink, '_blank')}
-            >
-              Google Maps
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </Section>
   );
 }

@@ -8,6 +8,30 @@ async function main() {
   // Clear existing data
   await prisma.rSVP.deleteMany();
   await prisma.invitationCode.deleteMany();
+  await prisma.group.deleteMany();
+
+  // Create groups
+  const groups = [
+    {
+      name: 'Family',
+      description: 'Family members',
+    },
+    {
+      name: 'Friends',
+      description: 'Close friends',
+    },
+    {
+      name: 'Colleagues',
+      description: 'Work colleagues',
+    },
+  ];
+
+  for (const groupData of groups) {
+    await prisma.group.create({
+      data: groupData,
+    });
+    console.log(`✅ Created group: ${groupData.name}`);
+  }
 
   // Create invitation codes
   const codes = [
@@ -15,16 +39,19 @@ async function main() {
       code: 'GANN-SOM-001',
       status: 'active',
       note: 'Sample invitation code 1',
+      groupName: 'Family',
     },
     {
       code: 'GANN-SOM-002',
       status: 'active',
       note: 'Sample invitation code 2',
+      groupName: 'Friends',
     },
     {
       code: 'GANN-SOM-TEST',
       status: 'disabled',
       note: 'Test code (disabled)',
+      groupName: 'Colleagues',
     },
   ];
 

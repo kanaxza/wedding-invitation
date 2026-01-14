@@ -1,16 +1,20 @@
+'use client';
+
 import { Section, SectionHeading } from './Section';
 import { Card, CardContent } from './Card';
 import { siteConfig } from '@/lib/siteConfig';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export function ContactSection() {
+  const { t } = useLanguage();
   return (
     <Section id="contact" background="gray">
-      <SectionHeading subtitle="Get in touch with us">Contact</SectionHeading>
+      <SectionHeading subtitle={t('contactSubtitle')}>{t('contactUs')}</SectionHeading>
       <Card>
         <CardContent>
           <div className="text-center space-y-6">
             <p className="text-gray-600">
-              If you have any questions or need assistance, please feel free to reach out:
+              {t('contactMessage')}
             </p>
 
             <div className="max-w-xs mx-auto">
@@ -30,7 +34,7 @@ export function ContactSection() {
                     />
                   </svg>
                 </div>
-                <h4 className="font-semibold text-gray-900 mb-1">Phone</h4>
+                <h4 className="font-semibold text-gray-900 mb-1">{t('phone')}</h4>
                 <p className="text-gray-600 text-sm">{siteConfig.contact.phone}</p>
               </div>
             </div>

@@ -1,0 +1,139 @@
+export const translations = {
+  en: {
+    // Hero Section
+    invitedTo: "You Are Invited To",
+    weddingReception: "Wedding Reception",
+    coupleName1: "Som",
+    coupleName2: "Gann",
+    venue: "Miracle Grand Hotel",
+    city: "Bangkok",
+    respondHere: "Respond Here",
+    seeMore: "See more...",
+
+    // Event Details
+    eventDetails: "Event Details",
+    eventDetailsSubtitle: "Join us for our special day",
+    dateTime: "Date & Time",
+    eventDate: "28 Mar 2026",
+    eventTime: "18:00–21:00",
+    location: "Location",
+    dressCode: "Dress Code",
+    dressCodeDescription: "Be your style, just come and celebrate with us.",
+    cashlessSociety: "Cashless Society",
+    cashlessText1: "Your presence is the greatest gift.",
+    cashlessText2: "For those who wish to support us further,",
+    cashlessText3: "Cash or bank transfer is sincerely appreciated.",
+    addToCalendar: "Add to Calendar",
+    googleMaps: "Google Maps",
+    qrPromptPay: "QR PromptPay",
+
+    // Photo Gallery
+    ourMoments: "Our Moments",
+
+    // RSVP Section
+    celebrateWithUs: "Celebrate With Us",
+    rsvpSubtitle: "Let us know if you can join us",
+    invitationCode: "Invitation Code",
+    enterCode: "Enter your code",
+    verifyCode: "Verify Code",
+    pleaseEnterCode: "Please enter your invitation code",
+    hiName: "Hi",
+    willYouAttend: "Will you attend?",
+    attending: "Yeah! See you.",
+    notAttending: "Sorry, I can't make it.",
+    numberOfFollowers: "Number of Followers",
+    justMe: "Just me",
+    back: "Back",
+    ok: "OK",
+    thankYou: "Thank You!",
+    wellMissYou: "We'll miss you!",
+    excitedMessage: "We're excited to celebrate with you!",
+    missYouMessage: "We'll miss you, but totally understand. Let's catch up soon!",
+    invalidCode: "Invalid invitation code. Please check and try again.",
+    codeDeactivated: "This invitation code has been deactivated. Please contact us for assistance.",
+    networkError: "Network error. Please check your connection and try again.",
+    pleaseSpecifyFollowers: "Please specify number of followers",
+    submitFailed: "Failed to submit RSVP. Please try again.",
+
+    // Contact Section
+    contactUs: "Contact Us",
+    contactSubtitle: "Have questions? We'd love to hear from you",
+    contactMessage: "If you have any questions or need assistance, please feel free to reach out:",
+    email: "Email",
+    phone: "Phone",
+
+    // Footer
+    copyright: "© 2025 Som & Gann. All rights reserved.",
+    allRightsReserved: "All rights reserved",
+  },
+  th: {
+    // Hero Section
+    invitedTo: "คุณได้รับเชิญเข้าร่วม",
+    weddingReception: "งานเลี้ยงฉลองมงคลสมรส",
+    coupleName1: "ส้ม",
+    coupleName2: "แก่น",
+    venue: "โรงแรมมิราเคิล แกรนด์",
+    city: "กรุงเทพฯ",
+    respondHere: "จะมาได้ไหมน้า...",
+    seeMore: "ดูเพิ่มเติม...",
+
+    // Event Details
+    eventDetails: "รายละเอียดงาน",
+    eventDetailsSubtitle: "ขอเชิญร่วมงานในวันพิเศษของเรา",
+    dateTime: "วันและเวลา",
+    eventDate: "28 มีนาคม 2569",
+    eventTime: "18:00–21:00 น.",
+    location: "สถานที่",
+    dressCode: "การแต่งกาย",
+    dressCodeDescription: "แต่งตามสไตล์ของคุณ มาร่วมฉลองกับเราได้เลยนะ",
+    cashlessSociety: "Cashless Society",
+    cashlessText1: "การมาร่วมงานของคุณคือของขวัญที่ดีที่สุด",
+    cashlessText2: "สำหรับท่านที่ต้องการให้การสนับสนุนเพิ่มเติม",
+    cashlessText3: "สามารถโอนเงินผ่านธนาคารได้เช่นกัน",
+    addToCalendar: "เพิ่มในปฏิทิน",
+    googleMaps: "Google Maps",
+    qrPromptPay: "QR พร้อมเพย์",
+
+    // Photo Gallery
+    ourMoments: "ช่วงเวลาของเรา",
+
+    // RSVP Section
+    celebrateWithUs: "ร่วมฉลองกับเรา",
+    rsvpSubtitle: "บอกเราหน่อยนะว่ามาร่วมงานได้หรือไม่",
+    invitationCode: "รหัสเชิญ",
+    enterCode: "ใส่รหัสของคุณ",
+    verifyCode: "ตรวจสอบรหัส",
+    pleaseEnterCode: "กรุณาใส่รหัสเชิญ",
+    hiName: "สวัสดี",
+    willYouAttend: "คุณจะมาร่วมงานหรือไม่?",
+    attending: "ไปแน่นอน แล้วเจอกันนะ",
+    notAttending: "ไม่สามารถไปร่วมงานได้",
+    numberOfFollowers: "จำนวนผู้ติดตาม",
+    justMe: "แค่ฉันคนเดียว",
+    back: "กลับ",
+    ok: "ตกลง",
+    thankYou: "พวกเราดีใจมากเลย!",
+    wellMissYou: "อดเจอกันเลย!",
+    excitedMessage: "ตื่นเต้นแล้ว...!",
+    missYouMessage: "ไว้เราค่อยนัดเจอกันนะครับ/ค่ะ!",
+    invalidCode: "รหัสเชิญไม่ถูกต้อง กรุณาตรวจสอบแล้วลองอีกครั้ง",
+    codeDeactivated: "รหัสเชิญนี้ถูกปิดการใช้งาน กรุณาติดต่อเราเพื่อขอความช่วยเหลือ",
+    networkError: "เกิดข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อและลองอีกครั้ง",
+    pleaseSpecifyFollowers: "กรุณาระบุจำนวนผู้ติดตาม",
+    submitFailed: "ไม่สามารถส่ง RSVP ได้ กรุณาลองอีกครั้ง",
+
+    // Contact Section
+    contactUs: "ติดต่อเรา",
+    contactSubtitle: "มีคำถามไหม? เรายินดีรับฟัง",
+    contactMessage: "หากคุณมีคำถามหรือต้องการความช่วยเหลือ กรุณาติดต่อเราได้เลย:",
+    email: "อีเมล",
+    phone: "โทรศัพท์",
+
+    // Footer
+    copyright: "© 2568 ส้ม & แก่น. สงวนลิขสิทธิ์",
+    allRightsReserved: "สงวนลิขสิทธิ์",
+  },
+};
+
+export type Language = keyof typeof translations;
+export type TranslationKey = keyof typeof translations.en;

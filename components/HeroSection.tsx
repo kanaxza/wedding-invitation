@@ -3,8 +3,10 @@
 import { siteConfig } from '@/lib/siteConfig';
 import { Button } from './Button';
 import Image from 'next/image';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export function HeroSection() {
+  const { t } = useLanguage();
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -32,19 +34,19 @@ export function HeroSection() {
         </div>
         
         <p className="text-sm uppercase tracking-widest mb-3" style={{ color: '#B18A3D' }}>
-          You Are Invited To
+          {t('invitedTo')}
         </p>
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif mb-3" style={{ color: '#B18A3D' }}>
-          Wedding Reception
+          {t('weddingReception')}
         </h1>
         <div className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-6" style={{ color: '#B18A3D' }}>
-          {siteConfig.couple.name1} & {siteConfig.couple.name2}
+          {t('coupleName1')} & {t('coupleName2')}
         </div>
         <div className="text-lg md:text-xl mb-2" style={{ color: '#B18A3D' }}>
-          {siteConfig.event.date}
+          {t('eventDate')}
         </div>
         <div className="text-base md:text-lg mb-6" style={{ color: '#B18A3D' }}>
-          {siteConfig.event.venue}, {siteConfig.event.city}
+          {t('venue')}, {t('city')}
         </div>
         
         {/* RSVP Button */}
@@ -53,7 +55,7 @@ export function HeroSection() {
             size="lg"
             onClick={() => scrollToSection('rsvp')}
           >
-            Respond Here
+            {t('respondHere')}
           </Button>
         </div>
         
@@ -75,7 +77,7 @@ export function HeroSection() {
               d="M19 14l-7 7m0 0l-7-7m7 7V3"
             />
           </svg>
-          <p className="text-xs mt-1" style={{ color: '#B18A3D' }}>See more...</p>
+          <p className="text-xs mt-1" style={{ color: '#B18A3D' }}>{t('seeMore')}</p>
         </div>
       </div>
       

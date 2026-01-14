@@ -7,6 +7,7 @@ import { Card, CardContent } from './Card';
 import { Button } from './Button';
 import { Input, Select } from './Input';
 import { LoadingSpinner } from './LoadingSpinner';
+import { useLanguage } from '@/lib/LanguageContext';
 
 type Step = 'code' | 'form' | 'success';
 
@@ -18,10 +19,12 @@ interface RSVPData {
 }
 
 export function RSVPSection() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>('code');
   const [code, setCode] = useState('');
   const [inviteeName, setInviteeName] = useState('');
+  const [groupName, setGroupName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<RSVPData>({
@@ -68,6 +71,7 @@ export function RSVPSection() {
         if (invitationResponse.ok) {
           const invitationData = await invitationResponse.json();
           setInviteeName(invitationData.inviteeName || '');
+          setGroupName(invitationData.groupName || '');
         }
 
         const rsvpResponse = await fetch(
@@ -100,7 +104,7 @@ export function RSVPSection() {
 
   const verifyCode = async () => {
     if (!code.trim()) {
-      setError('Please enter your invitation code');
+      setError(t('pleaseEnterCode'));
       return;
     }
 
@@ -131,6 +135,7 @@ export function RSVPSection() {
           if (invitationResponse.ok) {
             const invitationData = await invitationResponse.json();
             setInviteeName(invitationData.inviteeName || '');
+            setGroupName(invitationData.groupName || '');
           }
 
           // Check if RSVP already exists
@@ -153,17 +158,17 @@ export function RSVPSection() {
           }
           setStep('form');
         } else if (data.status === 'disabled') {
-          setError('This invitation code has been deactivated. Please contact us for assistance.');
+          setError(t('codeDeactivated'));
         }
       } else {
         if (data.status === 'not_found') {
-          setError('Invalid invitation code. Please check and try again.');
+          setError(t('invalidCode'));
         } else {
           setError('Unable to verify code. Please try again.');
         }
       }
     } catch (err) {
-      setError('Network error. Please check your connection and try again.');
+      setError(t('networkError'));
     } finally {
       setIsLoading(false);
     }
@@ -173,7 +178,7 @@ export function RSVPSection() {
     // Validate
     const errors: Record<string, string> = {};
     if (formData.attending && (formData.guestsCount === null || formData.guestsCount < 0)) {
-      errors.guestsCount = 'Please specify number of followers';
+      errors.guestsCount = t('pleaseSpecifyFollowers');
     }
 
     if (Object.keys(errors).length > 0) {
@@ -203,10 +208,10 @@ export function RSVPSection() {
       if (response.ok && data.success) {
         setStep('success');
       } else {
-        setError(data.error || 'Failed to submit RSVP. Please try again.');
+        setError(data.error || t('submitFailed'));
       }
     } catch (err) {
-      setError('Network error. Please check your connection and try again.');
+      setError(t('networkError'));
     } finally {
       setIsLoading(false);
     }
@@ -214,8 +219,8 @@ export function RSVPSection() {
 
   return (
     <Section id="rsvp">
-      <SectionHeading subtitle="Let us know if you can join us">
-      Celebrate With Us
+      <SectionHeading subtitle={t('rsvpSubtitle')}>
+        {t('celebrateWithUs')}
       </SectionHeading>
 
       <div className="max-w-xl mx-auto">
@@ -224,11 +229,11 @@ export function RSVPSection() {
             {step === 'code' && (
               <div className="space-y-4">
                 <p className="text-center text-gray-600 mb-6">
-                  Please enter your invitation code
+                  {t('pleaseEnterCode')}
                 </p>
                 <Input
-                  label="Invitation Code"
-                  placeholder="Enter your code"
+                  label={t('invitationCode')}
+                  placeholder={t('enterCode')}
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === 'Enter' && verifyCode()}
@@ -240,7 +245,7 @@ export function RSVPSection() {
                   onClick={verifyCode}
                   disabled={isLoading}
                 >
-                  {isLoading ? <LoadingSpinner size="sm" /> : 'Verify Code'}
+                  {isLoading ? <LoadingSpinner size="sm" /> : t('verifyCode')}
                 </Button>
               </div>
             )}
@@ -248,16 +253,23 @@ export function RSVPSection() {
             {step === 'form' && (
               <div className="space-y-4">
                 {inviteeName && (
-                  <p className="text-center text-lg font-semibold mb-4" style={{ color: '#B18A3D' }}>
-                    Hi, {inviteeName}!
-                  </p>
+                  <div className="text-center mb-4">
+                    <p className="text-lg font-semibold" style={{ color: '#B18A3D' }}>
+                      Hi, {inviteeName}!
+                    </p>
+                    {groupName && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        ({groupName})
+                      </p>
+                    )}
+                  </div>
                 )}
 
                 <Select
-                  label="Will you attend? *"
+                  label={t('willYouAttend')}
                   options={[
-                    { value: 'true', label: 'Yeah! See you.' },
-                    { value: 'false', label: "Sorry, I can't make it." },
+                    { value: 'true', label: t('attending') },
+                    { value: 'false', label: t('notAttending') },
                   ]}
                   value={formData.attending.toString()}
                   onChange={(e) =>
@@ -272,9 +284,9 @@ export function RSVPSection() {
 
                 {formData.attending && (
                   <Select
-                    label="Number of Followers *"
+                    label={t('numberOfFollowers')}
                     options={[
-                      { value: '0', label: '0 (Just me)' },
+                      { value: '0', label: t('justMe') },
                       { value: '1', label: '1' },
                       { value: '2', label: '2' },
                       { value: '3', label: '3' },
@@ -309,14 +321,14 @@ export function RSVPSection() {
                     }}
                     disabled={isLoading}
                   >
-                    Back
+                    {t('back')}
                   </Button>
                   <Button
                     className="flex-1"
                     onClick={submitRSVP}
                     disabled={isLoading}
                   >
-                    {isLoading ? <LoadingSpinner size="sm" /> : 'OK'}
+                    {isLoading ? <LoadingSpinner size="sm" /> : t('ok')}
                   </Button>
                 </div>
               </div>
@@ -346,12 +358,12 @@ export function RSVPSection() {
                   {formData.attending ? '🎉' : '😢'}
                 </div>
                 <h3 className="text-2xl font-semibold text-gray-900">
-                  {formData.attending ? 'See you soon!' : "We'll miss you!"}
+                  {formData.attending ? t('thankYou') : t('wellMissYou')}
                 </h3>
                 <p className="text-gray-600">
                   {formData.attending
-                    ? "We're excited to celebrate with you!"
-                    : "But totally understand. Let's catch up soon!"}
+                    ? t('excitedMessage')
+                    : t('missYouMessage')}
                 </p>
                 <div className="mt-6">
                   <Button
@@ -369,7 +381,7 @@ export function RSVPSection() {
                       setFormErrors({});
                     }}
                   >
-                    Back
+                    {t('back')}
                   </Button>
                 </div>
               </div>

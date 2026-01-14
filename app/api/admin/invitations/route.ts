@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { code, inviteeName } = body;
+    const { code, inviteeName, groupName } = body;
 
     if (!code || typeof code !== 'string' || code.trim().length === 0) {
       return NextResponse.json(
@@ -23,6 +23,13 @@ export async function POST(request: NextRequest) {
     if (!inviteeName || typeof inviteeName !== 'string' || inviteeName.trim().length === 0) {
       return NextResponse.json(
         { error: 'Invitee name is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!groupName || typeof groupName !== 'string' || groupName.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'Group name is required' },
         { status: 400 }
       );
     }
@@ -44,6 +51,7 @@ export async function POST(request: NextRequest) {
       data: {
         code: code.trim().toUpperCase(),
         note: inviteeName.trim(),
+        groupName: groupName.trim(),
         status: 'active',
       },
     });
@@ -95,7 +103,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, status, inviteeName } = body;
+    const { id, status, inviteeName, groupName } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -110,6 +118,9 @@ export async function PATCH(request: NextRequest) {
     }
     if (inviteeName !== undefined && inviteeName.trim()) {
       updateData.note = inviteeName.trim();
+    }
+    if (groupName !== undefined && groupName.trim()) {
+      updateData.groupName = groupName.trim();
     }
 
     const invitation = await prisma.invitationCode.update({

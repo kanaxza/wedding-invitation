@@ -5,6 +5,7 @@ import { PhotoGallery } from '@/components/PhotoGallery';
 import { RSVPSection } from '@/components/RSVPSection';
 import { ContactSection } from '@/components/ContactSection';
 import { Footer } from '@/components/Footer';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
       <RSVPSection />
       <PhotoGallery />
       <ContactSection />
+      <LanguageToggle />
       <Footer />
     </main>
   );
