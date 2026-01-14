@@ -18,9 +18,11 @@ export async function POST(request: NextRequest) {
 
     if (verifyAdminPassword(password)) {
       await setAdminAuth();
+      console.log('Admin authenticated successfully');
       return NextResponse.json({ success: true });
     }
 
+    console.log('Invalid password attempt');
     return NextResponse.json(
       { error: 'Invalid password' },
       { status: 401 }

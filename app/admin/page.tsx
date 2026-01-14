@@ -173,17 +173,16 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        setIsAuthenticated(true);
-        setPassword('');
-        // Small delay to ensure cookie is set before loading data
-        await new Promise(resolve => setTimeout(resolve, 100));
-        await loadData();
+        // Reload the page to ensure cookie is properly set and read
+        window.location.reload();
       } else {
-        setLoginError('Invalid password');
+        const data = await response.json();
+        setLoginError(data.error || 'Invalid password');
+        setIsLoading(false);
       }
     } catch (error) {
+      console.error('Login error:', error);
       setLoginError('Login failed. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };

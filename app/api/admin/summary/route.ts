@@ -4,6 +4,8 @@ import { checkAdminAuth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   const isAuthenticated = await checkAdminAuth();
+  
+  console.log('Summary endpoint - authenticated:', isAuthenticated);
 
   if (!isAuthenticated) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
