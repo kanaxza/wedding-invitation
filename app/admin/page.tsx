@@ -116,7 +116,7 @@ export default function AdminPage() {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/admin/summary');
+      const response = await fetch('/api/admin/summary', { credentials: 'include' });
       if (response.ok) {
         setIsAuthenticated(true);
         await loadData();
@@ -131,9 +131,9 @@ export default function AdminPage() {
   const loadData = async () => {
     try {
       const [summaryRes, invitationsRes, groupsRes] = await Promise.all([
-        fetch('/api/admin/summary'),
-        fetch('/api/admin/invitations'),
-        fetch('/api/admin/groups'),
+        fetch('/api/admin/summary', { credentials: 'include' }),
+        fetch('/api/admin/invitations', { credentials: 'include' }),
+        fetch('/api/admin/groups', { credentials: 'include' }),
       ]);
 
       if (summaryRes.ok) {
@@ -141,6 +141,7 @@ export default function AdminPage() {
         setSummary(data.summary);
         setRsvps(data.rsvps);
       } else {
+        console.error('Summary fetch failed:', summaryRes.status);
         setIsAuthenticated(false);
       }
 
@@ -168,10 +169,14 @@ export default function AdminPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
+        credentials: 'include',
       });
 
       if (response.ok) {
         setIsAuthenticated(true);
+        setPassword('');
+        // Small delay to ensure cookie is set before loading data
+        await new Promise(resolve => setTimeout(resolve, 100));
         await loadData();
       } else {
         setLoginError('Invalid password');
