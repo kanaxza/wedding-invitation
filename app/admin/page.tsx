@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/Card';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { siteConfig } from '@/lib/siteConfig';
 
 interface RSVP {
   id: string;
@@ -608,6 +609,64 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Summary Stats */}
+        {summary && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-1">Responses / Invitees</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {summary.totalResponses} / {invitations.length}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {invitations.length > 0 ? Math.round((summary.totalResponses / invitations.length) * 100) : 0}%
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-1">Attending</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    {summary.attending}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {invitations.length > 0 ? Math.round((summary.attending / invitations.length) * 100) : 0}%
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-1">Total Guests</p>
+                  <p className="text-3xl font-bold text-blue-600">
+                    {summary.totalGuests} / {siteConfig.event.maxGuests}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {Math.round((summary.totalGuests / siteConfig.event.maxGuests) * 100)}%
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-1">Not Attending</p>
+                  <p className="text-3xl font-bold text-red-600">
+                    {summary.notAttending}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {invitations.length > 0 ? Math.round((summary.notAttending / invitations.length) * 100) : 0}%
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Create Invitation Code */}
         <Card className="mb-8">
           <CardHeader>
@@ -1081,52 +1140,6 @@ export default function AdminPage() {
             })()}
           </CardContent>
         </Card>
-
-        {/* Summary Stats */}
-        {summary && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">Total Responses</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {summary.totalResponses}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">Attending</p>
-                  <p className="text-3xl font-bold text-green-600">
-                    {summary.attending}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">Not Attending</p>
-                  <p className="text-3xl font-bold text-red-600">
-                    {summary.notAttending}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">Total Guests</p>
-                  <p className="text-3xl font-bold text-primary-600">
-                    {summary.totalGuests}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
 
         {/* Actions */}
         <div className="mb-6 flex justify-between items-center">
