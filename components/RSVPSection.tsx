@@ -386,7 +386,7 @@ export function RSVPSection() {
                           {formData.otherFood !== '' && (
                             <input
                               type="text"
-                              value={formData.otherFood.trim()}
+                              value={formData.otherFood === ' ' ? '' : formData.otherFood}
                               onChange={(e) => {
                                 const value = e.target.value.slice(0, 200);
                                 setFormData({ ...formData, otherFood: value || ' ' });
