@@ -58,8 +58,8 @@ export const translations = {
     // Dietary Restrictions
     dietaryRestrictions: "Dietary Restrictions",
     dietaryRestrictionsDesc: "We love to prepare your prefer food, Please let us know.",
-    halalFood: "Halal Food",
-    vegetarianFood: "Vegetarian Food",
+    halalFood: "Halal",
+    vegetarianFood: "Vegetarian",
     nonBeef: "Non-Beef",
     other: "Other",
     otherPlaceholder: "Please specify...",
@@ -137,8 +137,8 @@ export const translations = {
     // Dietary Restrictions
     dietaryRestrictions: "อาหารที่เหมาะสมของท่าน",
     dietaryRestrictionsDesc: "เรายินดีจะดูแลด้านอาหาร โปรดแจ้งเราได้เลย",
-    halalFood: "อาหารฮาลาล",
-    vegetarianFood: "อาหารมังสวิรัติ",
+    halalFood: "ฮาลาล",
+    vegetarianFood: "มังสวิรัติ",
     nonBeef: "ไม่ทานเนื้อวัว",
     other: "อื่นๆ",
     otherPlaceholder: "โปรดระบุ...",

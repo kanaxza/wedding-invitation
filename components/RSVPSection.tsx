@@ -372,7 +372,9 @@ export function RSVPSection() {
                               type="checkbox"
                               checked={formData.otherFood !== ''}
                               onChange={(e) => {
-                                if (!e.target.checked) {
+                                if (e.target.checked) {
+                                  setFormData({ ...formData, otherFood: ' ' });
+                                } else {
                                   setFormData({ ...formData, otherFood: '' });
                                 }
                               }}
@@ -384,10 +386,10 @@ export function RSVPSection() {
                           {formData.otherFood !== '' && (
                             <input
                               type="text"
-                              value={formData.otherFood}
+                              value={formData.otherFood.trim()}
                               onChange={(e) => {
                                 const value = e.target.value.slice(0, 200);
-                                setFormData({ ...formData, otherFood: value });
+                                setFormData({ ...formData, otherFood: value || ' ' });
                               }}
                               placeholder={t('otherPlaceholder')}
                               disabled={isLoading}
