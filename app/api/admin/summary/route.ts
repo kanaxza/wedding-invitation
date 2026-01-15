@@ -41,6 +41,8 @@ export async function GET(request: NextRequest) {
         phone: r.phone,
         attending: r.attending,
         guestsCount: r.guestsCount,
+        foodPreferences: r.foodPreferences,
+        allergicFood: r.allergicFood,
         updatedAt: r.updatedAt,
         createdAt: r.createdAt,
       })),

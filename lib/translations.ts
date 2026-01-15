@@ -138,7 +138,7 @@ export const translations = {
     dietaryRestrictions: "อาหารที่เหมาะสมของท่าน",
     dietaryRestrictionsDesc: "เรายินดีจะดูแลด้านอาหาร โปรดแจ้งเราได้เลย",
     halalFood: "อาหารฮาลาล",
-    vegetarianFood: "อาหารเจ",
+    vegetarianFood: "อาหารมังสวิรัติ",
     nonBeef: "ไม่ทานเนื้อวัว",
     other: "อื่นๆ",
     otherPlaceholder: "โปรดระบุ...",
