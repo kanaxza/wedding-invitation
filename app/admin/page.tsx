@@ -103,6 +103,16 @@ export default function AdminPage() {
     imported: Array<{ code: string; inviteeName: string; groupName: string }>;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [rsvpModal, setRsvpModal] = useState<{ invitation: Invitation; rsvp: RSVP | null } | null>(null);
+  const [rsvpFormData, setRsvpFormData] = useState({
+    phone: '',
+    attending: true,
+    guestsCount: 0,
+    foodPreferences: [] as string[],
+    otherFood: '',
+    allergicFood: '',
+  });
+  const [isSubmittingRsvp, setIsSubmittingRsvp] = useState(false);
 
   const showAlert = (message: string, type: 'error' | 'success' | 'info' = 'error', title?: string) => {
     setAlertModal({
@@ -550,6 +560,118 @@ export default function AdminPage() {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+    }
+  };
+
+  const openRsvpModal = (invitation: Invitation) => {
+    setRsvpModal({ invitation, rsvp: invitation.rsvp });
+    if (invitation.rsvp) {
+      // Parse existing RSVP data
+      const followerCount = invitation.rsvp.guestsCount ? Math.max(0, invitation.rsvp.guestsCount - 1) : 0;
+      const foodPrefsArray = invitation.rsvp.foodPreferences 
+        ? invitation.rsvp.foodPreferences.split('|').filter(p => !p.startsWith('Other:')) 
+        : [];
+      const otherMatch = invitation.rsvp.foodPreferences 
+        ? invitation.rsvp.foodPreferences.split('|').find(p => p.startsWith('Other:')) 
+        : '';
+      
+      setRsvpFormData({
+        phone: invitation.rsvp.phone || '',
+        attending: invitation.rsvp.attending,
+        guestsCount: followerCount,
+        foodPreferences: foodPrefsArray,
+        otherFood: otherMatch ? otherMatch.replace('Other:', '') : '',
+        allergicFood: invitation.rsvp.allergicFood || '',
+      });
+    } else {
+      setRsvpFormData({
+        phone: '',
+        attending: true,
+        guestsCount: 0,
+        foodPreferences: [],
+        otherFood: '',
+        allergicFood: '',
+      });
+    }
+  };
+
+  const handleSubmitRsvp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rsvpModal) return;
+
+    setIsSubmittingRsvp(true);
+    try {
+      // Build food preferences string (same as invitee form)
+      const foodPrefsArray = [...rsvpFormData.foodPreferences];
+      if (rsvpFormData.otherFood.trim()) {
+        foodPrefsArray.push(`Other:${rsvpFormData.otherFood.trim()}`);
+      }
+      const foodPreferencesStr = foodPrefsArray.length > 0 ? foodPrefsArray.join('|') : undefined;
+
+      const endpoint = '/api/admin/rsvp';
+      const method = rsvpModal.rsvp ? 'PUT' : 'POST';
+      const body = rsvpModal.rsvp
+        ? { 
+            rsvpId: rsvpModal.rsvp.id,
+            phone: rsvpFormData.phone.trim() || '-',
+            attending: rsvpFormData.attending,
+            guestsCount: rsvpFormData.attending ? (rsvpFormData.guestsCount || 0) + 1 : null,
+            foodPreferences: foodPreferencesStr,
+            allergicFood: rsvpFormData.allergicFood.trim() || undefined,
+          }
+        : { 
+            invitationCodeId: rsvpModal.invitation.id,
+            phone: rsvpFormData.phone.trim() || '-',
+            attending: rsvpFormData.attending,
+            guestsCount: rsvpFormData.attending ? (rsvpFormData.guestsCount || 0) + 1 : null,
+            foodPreferences: foodPreferencesStr,
+            allergicFood: rsvpFormData.allergicFood.trim() || undefined,
+          };
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        setRsvpModal(null);
+        await loadData();
+        showAlert(
+          rsvpModal.rsvp ? 'RSVP updated successfully' : 'RSVP created successfully',
+          'success'
+        );
+      } else {
+        const data = await response.json();
+        showAlert(data.error || 'Failed to save RSVP');
+      }
+    } catch (error) {
+      showAlert('An error occurred. Please try again.');
+    } finally {
+      setIsSubmittingRsvp(false);
+    }
+  };
+
+  const handleDeleteRsvp = async (rsvpId: string) => {
+    if (!confirm('Are you sure you want to delete this RSVP?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/rsvp?rsvpId=${rsvpId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        setRsvpModal(null);
+        await loadData();
+        showAlert('RSVP deleted successfully', 'success');
+      } else {
+        const data = await response.json();
+        showAlert(data.error || 'Failed to delete RSVP');
+      }
+    } catch (error) {
+      showAlert('An error occurred. Please try again.');
     }
   };
 
@@ -1056,6 +1178,12 @@ export default function AdminPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => openRsvpModal(invitation)}
+                              className="text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                              {invitation.rsvp ? 'Edit RSVP' : 'Take RSVP'}
+                            </button>
                             <button
                               onClick={() => handleToggleStatus(invitation.id, invitation.status)}
                               disabled={isTogglingStatus === invitation.id}
@@ -1613,6 +1741,203 @@ export default function AdminPage() {
                 OK
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* RSVP Modal */}
+      {rsvpModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setRsvpModal(null)}
+        >
+          <div 
+            className="bg-white rounded-xl p-6 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {rsvpModal.rsvp ? 'Edit RSVP' : 'Take RSVP'}
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  For: {rsvpModal.invitation.inviteeName || 'Unknown'} ({rsvpModal.invitation.code})
+                </p>
+              </div>
+              <button
+                onClick={() => setRsvpModal(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitRsvp} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Will You Attend? *
+                </label>
+                <select
+                  value={rsvpFormData.attending.toString()}
+                  onChange={(e) => setRsvpFormData({ 
+                    ...rsvpFormData, 
+                    attending: e.target.value === 'true',
+                    guestsCount: e.target.value === 'true' ? 1 : 0,
+                  })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
+                >
+                  <option value="true">Attending</option>
+                  <option value="false">Not Attending</option>
+                </select>
+              </div>
+
+              {rsvpFormData.attending && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Number of Followers *
+                    </label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      (Not including yourself)
+                    </p>
+                    <select
+                      value={rsvpFormData.guestsCount.toString()}
+                      onChange={(e) => setRsvpFormData({ ...rsvpFormData, guestsCount: parseInt(e.target.value) || 0 })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
+                    >
+                      <option value="0">Just Me</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                    </select>
+                  </div>
+
+                  {/* Dietary Restrictions */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Dietary Restrictions (Optional)
+                    </label>
+                    <p className="text-xs text-gray-500 mb-3">
+                      Please let us know if you have any dietary restrictions
+                    </p>
+                    
+                    <div className="space-y-2">
+                      {[
+                        { value: 'halalFood', label: 'Halal Food' },
+                        { value: 'vegetarianFood', label: 'Vegetarian Food' },
+                        { value: 'nonBeef', label: 'Non-Beef' },
+                      ].map((pref) => (
+                        <label key={pref.value} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={rsvpFormData.foodPreferences.includes(pref.value)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setRsvpFormData({
+                                  ...rsvpFormData,
+                                  foodPreferences: [...rsvpFormData.foodPreferences, pref.value],
+                                });
+                              } else {
+                                setRsvpFormData({
+                                  ...rsvpFormData,
+                                  foodPreferences: rsvpFormData.foodPreferences.filter(p => p !== pref.value),
+                                });
+                              }
+                            }}
+                            className="w-4 h-4 text-[#B18A3D] border-gray-300 rounded focus:ring-[#B18A3D]"
+                          />
+                          <span className="text-sm text-gray-700">{pref.label}</span>
+                        </label>
+                      ))}
+                      
+                      {/* Other with text input */}
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={rsvpFormData.otherFood !== ''}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setRsvpFormData({ ...rsvpFormData, otherFood: ' ' });
+                              } else {
+                                setRsvpFormData({ ...rsvpFormData, otherFood: '' });
+                              }
+                            }}
+                            className="w-4 h-4 text-[#B18A3D] border-gray-300 rounded focus:ring-[#B18A3D]"
+                          />
+                          <span className="text-sm text-gray-700">Other</span>
+                        </label>
+                        {rsvpFormData.otherFood !== '' && (
+                          <input
+                            type="text"
+                            value={rsvpFormData.otherFood === ' ' ? '' : rsvpFormData.otherFood}
+                            onChange={(e) => {
+                              const value = e.target.value.slice(0, 200);
+                              setRsvpFormData({ ...rsvpFormData, otherFood: value || ' ' });
+                            }}
+                            placeholder="Please specify..."
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Allergic Food */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Allergic Food (Optional)
+                    </label>
+                    <textarea
+                      value={rsvpFormData.allergicFood}
+                      onChange={(e) => {
+                        const value = e.target.value.slice(0, 200);
+                        setRsvpFormData({ ...rsvpFormData, allergicFood: value });
+                      }}
+                      placeholder="Any food allergies?"
+                      rows={2}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent resize-none"
+                    />
+                    <p className="text-xs text-gray-400 text-right">
+                      {rsvpFormData.allergicFood.length}/200
+                    </p>
+                  </div>
+                </>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                {rsvpModal.rsvp && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="flex-1 !bg-gradient-to-br !from-red-700 !via-red-800 !to-red-900 hover:!from-red-800 hover:!via-red-900 hover:!to-red-950"
+                    onClick={() => handleDeleteRsvp(rsvpModal.rsvp!.id)}
+                  >
+                    Delete RSVP
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setRsvpModal(null)}
+                  disabled={isSubmittingRsvp}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={isSubmittingRsvp}
+                >
+                  {isSubmittingRsvp ? <LoadingSpinner size="sm" /> : (rsvpModal.rsvp ? 'Update RSVP' : 'Create RSVP')}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}
