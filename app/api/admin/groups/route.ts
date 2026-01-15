@@ -155,7 +155,7 @@ export async function DELETE(request: NextRequest) {
 
     // Check if group is being used by any invitation
     const invitationsUsingGroup = await prisma.invitationCode.count({
-      where: { groupName: (await prisma.group.findUnique({ where: { id } }))?.name },
+      where: { groupId: id },
     });
 
     if (invitationsUsingGroup > 0) {

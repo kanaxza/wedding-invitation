@@ -11,10 +11,11 @@ datasource db {
 }
 
 model Group {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
+  id              String           @id @default(cuid())
+  name            String           @unique
+  description     String?
+  createdAt       DateTime         @default(now())
+  invitationCodes InvitationCode[]
 }
 
 model InvitationCode {
@@ -22,9 +23,12 @@ model InvitationCode {
   code      String   @unique
   status    String   @default("active") // active or disabled
   note      String?
-  groupName String
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   rsvp      RSVP?
+
+  @@index([groupId])
 }
 
 model RSVP {

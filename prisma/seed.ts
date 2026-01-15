@@ -11,6 +11,7 @@ async function main() {
   await prisma.group.deleteMany();
 
   // Create groups
+  const createdGroups = [];
   const groups = [
     {
       name: 'Family',
@@ -27,9 +28,10 @@ async function main() {
   ];
 
   for (const groupData of groups) {
-    await prisma.group.create({
+    const group = await prisma.group.create({
       data: groupData,
     });
+    createdGroups.push(group);
     console.log(`✅ Created group: ${groupData.name}`);
   }
 
@@ -39,19 +41,19 @@ async function main() {
       code: 'GANN-SOM-001',
       status: 'active',
       note: 'Sample invitation code 1',
-      groupName: 'Family',
+      groupId: createdGroups[0].id, // Family
     },
     {
       code: 'GANN-SOM-002',
       status: 'active',
       note: 'Sample invitation code 2',
-      groupName: 'Friends',
+      groupId: createdGroups[1].id, // Friends
     },
     {
       code: 'GANN-SOM-TEST',
       status: 'disabled',
       note: 'Test code (disabled)',
-      groupName: 'Colleagues',
+      groupId: createdGroups[2].id, // Colleagues
     },
   ];
 

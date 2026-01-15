@@ -18,6 +18,9 @@ export async function POST(request: NextRequest) {
 
     const invitation = await prisma.invitationCode.findUnique({
       where: { code },
+      include: {
+        group: true,
+      },
     });
 
     if (!invitation) {
@@ -31,7 +34,7 @@ export async function POST(request: NextRequest) {
       ok: true,
       status: invitation.status,
       inviteeName: invitation.note,
-      groupName: invitation.groupName,
+      groupName: invitation.group.name,
     });
   } catch (error) {
     console.error('Error verifying invitation code:', error);

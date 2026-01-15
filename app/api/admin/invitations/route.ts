@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { code, inviteeName, groupName } = body;
+    const { code, inviteeName, groupId } = body;
 
     if (!code || typeof code !== 'string' || code.trim().length === 0) {
       return NextResponse.json(
@@ -27,9 +27,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!groupName || typeof groupName !== 'string' || groupName.trim().length === 0) {
+    if (!groupId || typeof groupId !== 'string' || groupId.trim().length === 0) {
       return NextResponse.json(
-        { error: 'Group name is required' },
+        { error: 'Group ID is required' },
         { status: 400 }
       );
     }
@@ -51,8 +51,11 @@ export async function POST(request: NextRequest) {
       data: {
         code: code.trim().toUpperCase(),
         note: inviteeName.trim(),
-        groupName: groupName.trim(),
+        groupId: groupId.trim(),
         status: 'active',
+      },
+      include: {
+        group: true,
       },
     });
 
@@ -81,6 +84,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
       include: {
         rsvp: true,
+        group: true,
       },
     });
 
@@ -103,7 +107,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, status, inviteeName, groupName } = body;
+    const { id, status, inviteeName, groupId } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -119,13 +123,16 @@ export async function PATCH(request: NextRequest) {
     if (inviteeName !== undefined && inviteeName.trim()) {
       updateData.note = inviteeName.trim();
     }
-    if (groupName !== undefined && groupName.trim()) {
-      updateData.groupName = groupName.trim();
+    if (groupId !== undefined && groupId.trim()) {
+      updateData.groupId = groupId.trim();
     }
 
     const invitation = await prisma.invitationCode.update({
       where: { id },
       data: updateData,
+      include: {
+        group: true,
+      },
     });
 
     return NextResponse.json({

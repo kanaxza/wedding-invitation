@@ -29,7 +29,11 @@ interface Invitation {
   code: string;
   status: string;
   note: string | null;
-  groupName: string | null;
+  groupId: string;
+  group: {
+    id: string;
+    name: string;
+  };
   createdAt: string;
   rsvp: RSVP | null;
 }
@@ -54,19 +58,19 @@ export default function AdminPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [newCode, setNewCode] = useState('');
   const [newInviteeName, setNewInviteeName] = useState('');
-  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupId, setNewGroupId] = useState('');
   const [createError, setCreateError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editInviteeName, setEditInviteeName] = useState('');
-  const [editGroupName, setEditGroupName] = useState('');
+  const [editGroupId, setEditGroupId] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; code: string; inviteeName: string } | null>(null);
   const [deleteGroupConfirm, setDeleteGroupConfirm] = useState<{ id: string; groupName: string } | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [newGroupInput, setNewGroupInput] = useState('');
   const [newGroupDescription, setNewGroupDescription] = useState('');
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
-  const [editGroupNameInput, setEditGroupNameInput] = useState('');
+  const [editGroupNameInput, setEditGroupIdInput] = useState('');
   const [editGroupDescriptionInput, setEditGroupDescriptionInput] = useState('');
   const [filterGroup, setFilterGroup] = useState<string>('all');
   const [filterInviteeName, setFilterInviteeName] = useState<string>('');
@@ -252,7 +256,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           code: codeToUse,
           inviteeName: newInviteeName.trim(),
-          groupName: newGroupName.trim() || undefined,
+          groupId: newGroupId.trim() || undefined,
         }),
       });
 
@@ -261,7 +265,7 @@ export default function AdminPage() {
       if (response.ok) {
         setNewCode('');
         setNewInviteeName('');
-        // Keep groupName for next entry
+        // Keep groupId for next entry
         await loadData();
         // Focus the invitee name input for quick next entry
         setTimeout(() => inviteeNameInputRef.current?.focus(), 0);
@@ -308,14 +312,14 @@ export default function AdminPage() {
         body: JSON.stringify({ 
           id, 
           inviteeName: editInviteeName,
-          groupName: editGroupName || undefined,
+          groupId: editGroupId || undefined,
         }),
       });
 
       if (response.ok) {
         setEditingId(null);
         setEditInviteeName('');
-        setEditGroupName('');
+        setEditGroupId('');
         await loadData();
       } else {
         showAlert('Failed to update invitee name');
@@ -368,7 +372,7 @@ export default function AdminPage() {
       if (response.ok) {
         setNewGroupInput('');
         setNewGroupDescription('');
-        setNewGroupName(data.group.name);
+        setNewGroupId(data.group.id);
         await loadData();
       } else {
         showAlert(data.error || 'Failed to create group');
@@ -399,7 +403,7 @@ export default function AdminPage() {
 
       if (response.ok) {
         setEditingGroupId(null);
-        setEditGroupNameInput('');
+        setEditGroupIdInput('');
         setEditGroupDescriptionInput('');
         await loadData();
       } else {
@@ -511,15 +515,15 @@ export default function AdminPage() {
                     Group *
                   </label>
                   <select
-                    value={newGroupName}
-                    onChange={(e) => setNewGroupName(e.target.value)}
+                    value={newGroupId}
+                    onChange={(e) => setNewGroupId(e.target.value)}
                     disabled={isCreating}
                     required
                     className="w-full h-[42px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
                   >
                     <option value="">Select a group...</option>
                     {groups.map((group) => (
-                      <option key={group.id} value={group.name}>
+                      <option key={group.id} value={group.id}>
                         {group.name}
                       </option>
                     ))}
@@ -548,7 +552,7 @@ export default function AdminPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Invitation Codes ({invitations.filter(inv => {
-                const matchesGroup = filterGroup === 'all' || inv.groupName === filterGroup;
+                const matchesGroup = filterGroup === 'all' || inv.group.name === filterGroup;
                 const matchesName = filterInviteeName === '' || (inv.note?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
                 const matchesRsvp = filterRsvpStatus === 'all' || 
                   (filterRsvpStatus === 'attending' && inv.rsvp?.attending) ||
@@ -645,7 +649,7 @@ export default function AdminPage() {
                     </tr>
                   ) : (
                     invitations.filter(inv => {
-                      const matchesGroup = filterGroup === 'all' || inv.groupName === filterGroup;
+                      const matchesGroup = filterGroup === 'all' || inv.group.name === filterGroup;
                       const matchesName = filterInviteeName === '' || (inv.note?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
                       const matchesRsvp = filterRsvpStatus === 'all' || 
                         (filterRsvpStatus === 'attending' && inv.rsvp?.attending) ||
@@ -675,7 +679,7 @@ export default function AdminPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
-                          {invitation.groupName || '-'}
+                          {invitation.group.name || '-'}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
                           {editingId === invitation.id ? (
@@ -688,13 +692,13 @@ export default function AdminPage() {
                                 className="px-2 py-1 border rounded"
                               />
                               <select
-                                value={editGroupName}
-                                onChange={(e) => setEditGroupName(e.target.value)}
+                                value={editGroupId}
+                                onChange={(e) => setEditGroupId(e.target.value)}
                                 className="px-2 py-1 border rounded"
                               >
                                 <option value="">Select a group...</option>
                                 {groups.map((group) => (
-                                  <option key={group.id} value={group.name}>
+                                  <option key={group.id} value={group.id}>
                                     {group.name}
                                   </option>
                                 ))}
@@ -710,7 +714,7 @@ export default function AdminPage() {
                                   onClick={() => {
                                     setEditingId(null);
                                     setEditInviteeName('');
-                                    setEditGroupName('');
+                                    setEditGroupId('');
                                   }}
                                   className="text-gray-600 hover:text-gray-800"
                                 >
@@ -725,7 +729,7 @@ export default function AdminPage() {
                                 onClick={() => {
                                   setEditingId(invitation.id);
                                   setEditInviteeName(invitation.note || '');
-                                  setEditGroupName(invitation.groupName || '');
+                                  setEditGroupId(invitation.groupId || '');
                                 }}
                                 className="text-blue-600 hover:text-blue-800 text-xs"
                               >
@@ -774,7 +778,7 @@ export default function AdminPage() {
             </div>
             {(() => {
               const filteredInvitations = invitations.filter(inv => {
-                const matchesGroup = filterGroup === 'all' || inv.groupName === filterGroup;
+                const matchesGroup = filterGroup === 'all' || inv.group.name === filterGroup;
                 const matchesName = filterInviteeName === '' || (inv.note?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
                 const matchesRsvp = filterRsvpStatus === 'all' || 
                   (filterRsvpStatus === 'attending' && inv.rsvp?.attending) ||
@@ -1050,7 +1054,7 @@ export default function AdminPage() {
                             <input
                               type="text"
                               value={editGroupNameInput}
-                              onChange={(e) => setEditGroupNameInput(e.target.value)}
+                              onChange={(e) => setEditGroupIdInput(e.target.value)}
                               className="px-2 py-1 border rounded w-full"
                               autoFocus
                             />
@@ -1086,7 +1090,7 @@ export default function AdminPage() {
                               <button
                                 onClick={() => {
                                   setEditingGroupId(null);
-                                  setEditGroupNameInput('');
+                                  setEditGroupIdInput('');
                                   setEditGroupDescriptionInput('');
                                 }}
                                 className="text-gray-600 hover:text-gray-800 font-medium"
@@ -1099,7 +1103,7 @@ export default function AdminPage() {
                               <button
                                 onClick={() => {
                                   setEditingGroupId(group.id);
-                                  setEditGroupNameInput(group.name);
+                                  setEditGroupIdInput(group.name);
                                   setEditGroupDescriptionInput(group.description || '');
                                 }}
                                 className="text-blue-600 hover:text-blue-800 font-medium"
