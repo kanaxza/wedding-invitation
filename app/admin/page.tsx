@@ -672,9 +672,11 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        setDeleteRsvpConfirm(null);
         await loadData();
-        showAlert('RSVP deleted successfully', 'success', undefined, () => setRsvpModal(null));
+        showAlert('RSVP deleted successfully', 'success', undefined, () => {
+          setDeleteRsvpConfirm(null);
+          setRsvpModal(null);
+        });
       } else {
         const data = await response.json();
         showAlert(data.error || 'Failed to delete RSVP');
