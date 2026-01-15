@@ -806,7 +806,7 @@ export default function AdminPage() {
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Create Invitation Code</CardTitle>
+              <CardTitle>Create Invitation</CardTitle>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -885,7 +885,7 @@ export default function AdminPage() {
                 </div>
               </div>
               <Button type="submit" disabled={isCreating} className="h-[42px]">
-                {isCreating ? <LoadingSpinner size="sm" /> : 'Create Code'}
+                {isCreating ? <LoadingSpinner size="sm" /> : 'Create'}
               </Button>
             </form>
           </CardContent>
@@ -981,7 +981,7 @@ export default function AdminPage() {
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Invitation Codes ({invitations.filter(inv => {
+              <CardTitle>Invitation List ({invitations.filter(inv => {
                 const matchesGroup = filterGroup === 'all' || inv.group.name === filterGroup;
                 const matchesName = filterInviteeName === '' || (inv.inviteeName?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
                 const matchesRsvp = filterRsvpStatus === 'all' || 
