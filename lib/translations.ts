@@ -37,7 +37,7 @@ export const translations = {
     enterCode: "Enter your code",
     verifyCode: "Verify Code",
     pleaseEnterCode: "Please enter your invitation code",
-    hiName: "Hi",
+    hiName: "Hi, ",
     willYouAttend: "Will you attend?",
     attending: "Yeah! See you.",
     notAttending: "Sorry, I can't make it.",
@@ -57,7 +57,7 @@ export const translations = {
     
     // Dietary Restrictions
     dietaryRestrictions: "Dietary Restrictions",
-    dietaryRestrictionsDesc: "We love to prepare your prefer food, Please let us know.",
+    dietaryRestrictionsDesc: "We’d love to accommodate your food preferences — please let us know.",
     halalFood: "Halal",
     vegetarianFood: "Vegetarian",
     nonBeef: "Non-Beef",
@@ -116,8 +116,8 @@ export const translations = {
     enterCode: "ใส่รหัสของคุณ",
     verifyCode: "ตรวจสอบรหัส",
     pleaseEnterCode: "กรุณาใส่รหัสเชิญ",
-    hiName: "สวัสดี",
-    willYouAttend: "คุณจะมาร่วมงานหรือไม่?",
+    hiName: "สวัสดีครับ/ค่ะ ",
+    willYouAttend: "จะมาร่วมงานของพวกเราได้หรือไม่ครับ/คะ?",
     attending: "ไปแน่นอน แล้วเจอกันนะ",
     notAttending: "ไม่สามารถไปร่วมงานได้",
     numberOfFollowers: "จำนวนผู้ติดตาม",

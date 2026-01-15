@@ -275,10 +275,10 @@ export function RSVPSection() {
                 {inviteeName && (
                   <div className="text-center mb-4">
                     <p className="text-lg font-semibold" style={{ color: '#B18A3D' }}>
-                      Hi, {inviteeName}!
+                      {t('hiName')}{inviteeName}!
                     </p>
                     {groupName && (
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-lg mt-1" style={{ color: '#B18A3D' }}>
                         ({groupName})
                       </p>
                     )}
