@@ -485,7 +485,6 @@ export function RSVPSection() {
                       setStep('code');
                       // Keep the code for reuse
                       setFormData({
-                        name: '',
                         phone: '',
                         attending: true,
                         guestsCount: 0,
