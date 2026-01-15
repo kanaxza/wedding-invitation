@@ -63,6 +63,12 @@ export default function AdminPage() {
   const [newGroupId, setNewGroupId] = useState('');
   const [createError, setCreateError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isTogglingStatus, setIsTogglingStatus] = useState<string | null>(null);
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
+  const [isUpdatingGroup, setIsUpdatingGroup] = useState(false);
+  const [isDeletingGroup, setIsDeletingGroup] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editInviteeName, setEditInviteeName] = useState('');
   const [editGroupId, setEditGroupId] = useState('');
@@ -85,6 +91,15 @@ export default function AdminPage() {
   const [rsvpsPageSize, setRsvpsPageSize] = useState(10);
   const [alertModal, setAlertModal] = useState<{ title: string; message: string; type: 'error' | 'success' | 'info' } | null>(null);
   const inviteeNameInputRef = useRef<HTMLInputElement>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{
+    success: boolean;
+    successCount: number;
+    errorCount: number;
+    errors: Array<{ row: number; code?: string; inviteeName: string; error: string }>;
+    imported: Array<{ code: string; inviteeName: string; groupName: string }>;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showAlert = (message: string, type: 'error' | 'success' | 'info' = 'error', title?: string) => {
     setAlertModal({
@@ -284,6 +299,7 @@ export default function AdminPage() {
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
     
+    setIsTogglingStatus(id);
     try {
       const response = await fetch('/api/admin/invitations', {
         method: 'PATCH',
@@ -298,6 +314,8 @@ export default function AdminPage() {
       }
     } catch (error) {
       showAlert('An error occurred. Please try again.');
+    } finally {
+      setIsTogglingStatus(null);
     }
   };
 
@@ -307,6 +325,7 @@ export default function AdminPage() {
       return;
     }
 
+    setIsUpdating(true);
     try {
       const response = await fetch('/api/admin/invitations', {
         method: 'PATCH',
@@ -328,6 +347,8 @@ export default function AdminPage() {
       }
     } catch (error) {
       showAlert('An error occurred. Please try again.');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -338,6 +359,7 @@ export default function AdminPage() {
   const confirmDelete = async () => {
     if (!deleteConfirm) return;
 
+    setIsDeleting(true);
     try {
       const response = await fetch(`/api/admin/invitations?id=${deleteConfirm.id}`, {
         method: 'DELETE',
@@ -351,6 +373,7 @@ export default function AdminPage() {
     } catch (error) {
       showAlert('An error occurred. Please try again.');
     } finally {
+      setIsDeleting(false);
       setDeleteConfirm(null);
     }
   };
@@ -359,6 +382,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (!newGroupInput.trim()) return;
 
+    setIsCreatingGroup(true);
     try {
       const response = await fetch('/api/admin/groups', {
         method: 'POST',
@@ -381,6 +405,8 @@ export default function AdminPage() {
       }
     } catch (error) {
       showAlert('An error occurred. Please try again.');
+    } finally {
+      setIsCreatingGroup(false);
     }
   };
 
@@ -390,6 +416,7 @@ export default function AdminPage() {
       return;
     }
 
+    setIsUpdatingGroup(true);
     try {
       const response = await fetch('/api/admin/groups', {
         method: 'PATCH',
@@ -413,6 +440,8 @@ export default function AdminPage() {
       }
     } catch (error) {
       showAlert('An error occurred. Please try again.');
+    } finally {
+      setIsUpdatingGroup(false);
     }
   };
 
@@ -423,6 +452,7 @@ export default function AdminPage() {
   const confirmDeleteGroup = async () => {
     if (!deleteGroupConfirm) return;
 
+    setIsDeletingGroup(true);
     try {
       const response = await fetch(`/api/admin/groups?id=${deleteGroupConfirm.id}`, {
         method: 'DELETE',
@@ -438,7 +468,85 @@ export default function AdminPage() {
     } catch (error) {
       showAlert('An error occurred. Please try again.');
     } finally {
+      setIsDeletingGroup(false);
       setDeleteGroupConfirm(null);
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await fetch('/api/admin/invitations/template', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        showAlert('Failed to download template');
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'invitation_codes_template.csv';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      showAlert('Failed to download template');
+    }
+  };
+
+  const handleImportCSV = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    setImportResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/admin/invitations/import', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setImportResult(data);
+        if (data.successCount > 0) {
+          await loadData();
+          showAlert(
+            `Successfully imported ${data.successCount} invitation code(s)${data.errorCount > 0 ? `. ${data.errorCount} error(s) occurred.` : '.'}`,
+            data.errorCount === 0 ? 'success' : 'info',
+            'Import Complete'
+          );
+        } else {
+          showAlert(
+            `Import failed. ${data.errorCount} error(s) occurred.`,
+            'error',
+            'Import Failed'
+          );
+        }
+      } else {
+        showAlert(data.error || 'Failed to import CSV');
+      }
+    } catch (error) {
+      showAlert('Failed to import CSV');
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -487,7 +595,10 @@ export default function AdminPage() {
             <Button variant="outline" onClick={() => router.push('/')}>
               View Site
             </Button>
-            <Button variant="secondary" onClick={handleLogout}>
+            <Button 
+              onClick={handleLogout}
+              className="bg-gradient-to-br from-[#C99A4D] via-[#A67C38] to-[#8B6B29] text-white hover:from-[#D4A857] hover:via-[#B18A3D] hover:to-[#9A7330] active:from-[#A67C38] active:to-[#7A5F25] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/40 before:via-transparent before:to-black/20 before:transition-opacity after:absolute after:inset-0 after:bg-[linear-gradient(110deg,transparent_25%,rgba(255,255,255,0.3)_50%,transparent_75%)] after:translate-x-[-200%] hover:after:translate-x-[200%] after:transition-transform after:duration-700"
+            >
               Logout
             </Button>
           </div>
@@ -498,7 +609,42 @@ export default function AdminPage() {
         {/* Create Invitation Code */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Create Invitation Code</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Create Invitation Code</CardTitle>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadTemplate}
+                  className="flex items-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download Template
+                </Button>
+                <Button
+                  onClick={handleImportCSV}
+                  disabled={isImporting}
+                  className="flex items-center gap-2 bg-gradient-to-br from-[#C99A4D] via-[#A67C38] to-[#8B6B29] text-white hover:from-[#D4A857] hover:via-[#B18A3D] hover:to-[#9A7330] active:from-[#A67C38] active:to-[#7A5F25] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/40 before:via-transparent before:to-black/20 before:transition-opacity after:absolute after:inset-0 after:bg-[linear-gradient(110deg,transparent_25%,rgba(255,255,255,0.3)_50%,transparent_75%)] after:translate-x-[-200%] hover:after:translate-x-[200%] after:transition-transform after:duration-700"
+                >
+                  {isImporting ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  )}
+                  Import CSV
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleCreateCode} className="space-y-4">
@@ -548,6 +694,92 @@ export default function AdminPage() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Import Results */}
+        {importResult && (
+          <Card className="mb-8">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Import Results</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setImportResult(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="text-sm text-green-600 font-medium">Successful</div>
+                    <div className="text-2xl font-bold text-green-700">{importResult.successCount}</div>
+                  </div>
+                  <div className="bg-red-50 p-4 rounded-lg">
+                    <div className="text-sm text-red-600 font-medium">Failed</div>
+                    <div className="text-2xl font-bold text-red-700">{importResult.errorCount}</div>
+                  </div>
+                </div>
+
+                {importResult.imported.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Successfully Imported:</h3>
+                    <div className="bg-green-50 rounded-lg p-4 max-h-48 overflow-y-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-600">
+                            <th className="pb-2">Code</th>
+                            <th className="pb-2">Invitee Name</th>
+                            <th className="pb-2">Group</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {importResult.imported.map((item, idx) => (
+                            <tr key={idx} className="border-t border-green-200">
+                              <td className="py-1 font-mono text-green-700">{item.code}</td>
+                              <td className="py-1">{item.inviteeName}</td>
+                              <td className="py-1 text-gray-600">{item.groupName}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {importResult.errors.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Errors:</h3>
+                    <div className="bg-red-50 rounded-lg p-4 max-h-48 overflow-y-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-600">
+                            <th className="pb-2">Row</th>
+                            <th className="pb-2">Code</th>
+                            <th className="pb-2">Invitee Name</th>
+                            <th className="pb-2">Error</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {importResult.errors.map((error, idx) => (
+                            <tr key={idx} className="border-t border-red-200">
+                              <td className="py-1 text-red-700">{error.row}</td>
+                              <td className="py-1 font-mono">{error.code || '-'}</td>
+                              <td className="py-1">{error.inviteeName}</td>
+                              <td className="py-1 text-red-600">{error.error}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Invitation Codes List */}
         <Card className="mb-8">
@@ -708,9 +940,17 @@ export default function AdminPage() {
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => handleEditName(invitation.id)}
-                                  className="text-green-600 hover:text-green-800"
+                                  disabled={isUpdating}
+                                  className="text-green-600 hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                 >
-                                  Save
+                                  {isUpdating ? (
+                                    <>
+                                      <LoadingSpinner size="sm" />
+                                      Saving...
+                                    </>
+                                  ) : (
+                                    'Save'
+                                  )}
                                 </button>
                                 <button
                                   onClick={() => {
@@ -718,7 +958,8 @@ export default function AdminPage() {
                                     setEditInviteeName('');
                                     setEditGroupId('');
                                   }}
-                                  className="text-gray-600 hover:text-gray-800"
+                                  disabled={isUpdating}
+                                  className="text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   Cancel
                                 </button>
@@ -756,12 +997,16 @@ export default function AdminPage() {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleToggleStatus(invitation.id, invitation.status)}
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full cursor-pointer ${
+                              disabled={isTogglingStatus === invitation.id}
+                              className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                                 invitation.status === 'active'
                                   ? 'bg-green-100 text-green-800 hover:bg-green-200'
                                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                               }`}
                             >
+                              {isTogglingStatus === invitation.id ? (
+                                <LoadingSpinner size="sm" />
+                              ) : null}
                               {invitation.status}
                             </button>
                             <button
@@ -1042,7 +1287,9 @@ export default function AdminPage() {
                     value={newGroupDescription}
                     onChange={(e) => setNewGroupDescription(e.target.value)}
                 />
-                <Button type="submit" className="h-[42px]">Add</Button>
+                <Button type="submit" className="h-[42px]" disabled={isCreatingGroup}>
+                  {isCreatingGroup ? <LoadingSpinner size="sm" /> : 'Add'}
+                </Button>
               </div>
             </form>
             <div className="overflow-x-auto">
@@ -1109,9 +1356,17 @@ export default function AdminPage() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleEditGroup(group.id)}
-                                className="text-green-600 hover:text-green-800 font-medium"
+                                disabled={isUpdatingGroup}
+                                className="text-green-600 hover:text-green-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                               >
-                                Save
+                                {isUpdatingGroup ? (
+                                  <>
+                                    <LoadingSpinner size="sm" />
+                                    Saving...
+                                  </>
+                                ) : (
+                                  'Save'
+                                )}
                               </button>
                               <button
                                 onClick={() => {
@@ -1119,7 +1374,8 @@ export default function AdminPage() {
                                   setEditGroupIdInput('');
                                   setEditGroupDescriptionInput('');
                                 }}
-                                className="text-gray-600 hover:text-gray-800 font-medium"
+                                disabled={isUpdatingGroup}
+                                className="text-gray-600 hover:text-gray-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 Cancel
                               </button>
@@ -1231,6 +1487,7 @@ export default function AdminPage() {
                 variant="outline"
                 className="flex-1"
                 onClick={() => setDeleteConfirm(null)}
+                disabled={isDeleting}
               >
                 Cancel
               </Button>
@@ -1238,8 +1495,9 @@ export default function AdminPage() {
                 variant="secondary"
                 className="flex-1 !bg-gradient-to-br !from-red-700 !via-red-800 !to-red-900 hover:!from-red-800 hover:!via-red-900 hover:!to-red-950"
                 onClick={confirmDelete}
+                disabled={isDeleting}
               >
-                Delete
+                {isDeleting ? <LoadingSpinner size="sm" /> : 'Delete'}
               </Button>
             </div>
           </div>
@@ -1278,6 +1536,7 @@ export default function AdminPage() {
                 variant="outline"
                 className="flex-1"
                 onClick={() => setDeleteGroupConfirm(null)}
+                disabled={isDeletingGroup}
               >
                 Cancel
               </Button>
@@ -1285,8 +1544,9 @@ export default function AdminPage() {
                 variant="secondary"
                 className="flex-1 !bg-gradient-to-br !from-red-700 !via-red-800 !to-red-900 hover:!from-red-800 hover:!via-red-900 hover:!to-red-950"
                 onClick={confirmDeleteGroup}
+                disabled={isDeletingGroup}
               >
-                Delete
+                {isDeletingGroup ? <LoadingSpinner size="sm" /> : 'Delete'}
               </Button>
             </div>
           </div>
