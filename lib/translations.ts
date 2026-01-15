@@ -72,7 +72,7 @@ export const translations = {
     contactSubtitle: "Have questions? We'd love to hear from you",
     contactMessage: "If you have any questions or need assistance, please feel free to reach out:",
     email: "Email",
-    phone: "Phone",
+    phone: "Phone (Groom)",
 
     // Footer
     copyright: "© 2025 Som & Gann. All rights reserved.",
@@ -116,18 +116,18 @@ export const translations = {
     enterCode: "ใส่รหัสของคุณ",
     verifyCode: "ตรวจสอบรหัส",
     pleaseEnterCode: "กรุณาใส่รหัสเชิญ",
-    hiName: "สวัสดีครับ/ค่ะ ",
-    willYouAttend: "จะมาร่วมงานของพวกเราได้หรือไม่ครับ/คะ?",
+    hiName: "สวัสดี ",
+    willYouAttend: "จะมาร่วมงานของพวกเราได้หรือไม่?",
     attending: "ไปแน่นอน แล้วเจอกันนะ",
     notAttending: "ไม่สามารถไปร่วมงานได้",
     numberOfFollowers: "จำนวนผู้ติดตาม",
     justMe: "แค่ฉันคนเดียว",
     back: "กลับ",
     ok: "ตกลง",
-    thankYou: "พวกเราดีใจมากเลย!",
+    thankYou: "บ่าวสาวดีใจมากเลย!",
     wellMissYou: "อดเจอกันเลย!",
-    excitedMessage: "ตื่นเต้นแล้ว...!",
-    missYouMessage: "ไว้เราค่อยนัดเจอกันนะครับ/ค่ะ!",
+    excitedMessage: "ตื่นเต้นมากๆที่ได้เจอกัน!",
+    missYouMessage: "บ่าวสาวเข้าใจ และขอขอบคุณที่ช่วยแจ้งให้ทราบครับ/ค่ะ!",
     invalidCode: "รหัสเชิญไม่ถูกต้อง กรุณาตรวจสอบแล้วลองอีกครั้ง",
     codeDeactivated: "รหัสเชิญนี้ถูกปิดการใช้งาน กรุณาติดต่อเราเพื่อขอความช่วยเหลือ",
     networkError: "เกิดข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อและลองอีกครั้ง",
@@ -136,7 +136,7 @@ export const translations = {
     
     // Dietary Restrictions
     dietaryRestrictions: "อาหารที่เหมาะสมของท่าน",
-    dietaryRestrictionsDesc: "เรายินดีจะดูแลด้านอาหาร โปรดแจ้งเราได้เลย",
+    dietaryRestrictionsDesc: "บ่าวสาวยินดีที่จะดูแลด้านอาหาร โปรดแจ้งได้เลย",
     halalFood: "ฮาลาล",
     vegetarianFood: "มังสวิรัติ",
     nonBeef: "ไม่ทานเนื้อวัว",
@@ -151,7 +151,7 @@ export const translations = {
     contactSubtitle: "มีคำถามไหม? เรายินดีรับฟัง",
     contactMessage: "หากคุณมีคำถามหรือต้องการความช่วยเหลือ กรุณาติดต่อเราได้เลย:",
     email: "อีเมล",
-    phone: "โทรศัพท์",
+    phone: "โทรศัพท์ (เจ้าบ่าว)",
 
     // Footer
     copyright: "© 2568 ส้ม & แก่น. สงวนลิขสิทธิ์",
