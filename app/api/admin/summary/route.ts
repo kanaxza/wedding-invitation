@@ -41,7 +41,6 @@ export async function GET(request: NextRequest) {
       rsvps: rsvps.map((r) => ({
         id: r.id,
         code: r.invitationCode.code,
-        name: r.name,
         phone: r.phone,
         attending: r.attending,
         guestsCount: r.guestsCount,
