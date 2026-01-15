@@ -92,7 +92,7 @@ export default function AdminPage() {
   const [groupsPageSize, setGroupsPageSize] = useState(10);
   const [invitationsPageSize, setInvitationsPageSize] = useState(10);
   const [rsvpsPageSize, setRsvpsPageSize] = useState(10);
-  const [alertModal, setAlertModal] = useState<{ title: string; message: string; type: 'error' | 'success' | 'info' } | null>(null);
+  const [alertModal, setAlertModal] = useState<{ title: string; message: string; type: 'error' | 'success' | 'info'; onClose?: () => void } | null>(null);
   const inviteeNameInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<{
@@ -116,11 +116,12 @@ export default function AdminPage() {
   const [deleteRsvpConfirm, setDeleteRsvpConfirm] = useState<{ rsvpId: string; inviteeName: string } | null>(null);
   const [isDeletingRsvp, setIsDeletingRsvp] = useState(false);
 
-  const showAlert = (message: string, type: 'error' | 'success' | 'info' = 'error', title?: string) => {
+  const showAlert = (message: string, type: 'error' | 'success' | 'info' = 'error', title?: string, onClose?: () => void) => {
     setAlertModal({
       title: title || (type === 'error' ? 'Error' : type === 'success' ? 'Success' : 'Information'),
       message,
-      type
+      type,
+      onClose
     });
   };
 
@@ -638,11 +639,12 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        setRsvpModal(null);
         await loadData();
         showAlert(
           rsvpModal.rsvp ? 'RSVP updated successfully' : 'RSVP created successfully',
-          'success'
+          'success',
+          undefined,
+          () => setRsvpModal(null)
         );
       } else {
         const data = await response.json();
@@ -670,10 +672,9 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        setRsvpModal(null);
         setDeleteRsvpConfirm(null);
         await loadData();
-        showAlert('RSVP deleted successfully', 'success');
+        showAlert('RSVP deleted successfully', 'success', undefined, () => setRsvpModal(null));
       } else {
         const data = await response.json();
         showAlert(data.error || 'Failed to delete RSVP');
@@ -1709,8 +1710,11 @@ export default function AdminPage() {
       {/* Alert Modal */}
       {alertModal && (
         <div 
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-          onClick={() => setAlertModal(null)}
+          className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4"
+          onClick={() => {
+            if (alertModal.onClose) alertModal.onClose();
+            setAlertModal(null);
+          }}
         >
           <div 
             className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl"
@@ -1746,7 +1750,10 @@ export default function AdminPage() {
               <Button
                 variant="outline"
                 className="px-8"
-                onClick={() => setAlertModal(null)}
+                onClick={() => {
+                  if (alertModal.onClose) alertModal.onClose();
+                  setAlertModal(null);
+                }}
               >
                 OK
               </Button>
