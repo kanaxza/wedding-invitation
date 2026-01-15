@@ -886,7 +886,7 @@ export default function AdminPage() {
                   ) : (
                     invitations.filter(inv => {
                       const matchesGroup = filterGroup === 'all' || inv.group.name === filterGroup;
-                      const matchesName = filterInviteeName === '' || (inv.note?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
+                      const matchesName = filterInviteeName === '' || (inv.inviteeName?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
                       const matchesRsvp = filterRsvpStatus === 'all' || 
                         (filterRsvpStatus === 'attending' && inv.rsvp?.attending) ||
                         (filterRsvpStatus === 'not-attending' && inv.rsvp && !inv.rsvp.attending) ||
