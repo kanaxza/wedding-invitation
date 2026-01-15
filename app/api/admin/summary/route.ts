@@ -12,10 +12,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Get all RSVPs with invitation code
+    // Get all RSVPs with invitation code and group
     const rsvps = await prisma.rSVP.findMany({
       include: {
-        invitationCode: true,
+        invitationCode: {
+          include: {
+            group: true,
+          },
+        },
       },
       orderBy: {
         updatedAt: 'desc',
@@ -45,6 +49,8 @@ export async function GET(request: NextRequest) {
         allergicFood: r.allergicFood,
         updatedAt: r.updatedAt,
         createdAt: r.createdAt,
+        groupName: r.invitationCode.group.name,
+        inviteeName: r.invitationCode.inviteeName,
       })),
     });
   } catch (error) {

@@ -19,14 +19,14 @@ model Group {
 }
 
 model InvitationCode {
-  id        String   @id @default(cuid())
-  code      String   @unique
-  status    String   @default("active") // active or disabled
-  note      String?
-  groupId   String
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  rsvp      RSVP?
+  id          String   @id @default(cuid())
+  code        String   @unique
+  status      String   @default("active") // active or disabled
+  inviteeName String?
+  groupId     String
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  rsvp        RSVP?
 
   @@index([groupId])
 }
@@ -35,7 +35,6 @@ model RSVP {
   id               String         @id @default(cuid())
   invitationCodeId String         @unique
   invitationCode   InvitationCode @relation(fields: [invitationCodeId], references: [id], onDelete: Cascade)
-  name             String
   phone            String
   attending        Boolean
   guestsCount      Int?

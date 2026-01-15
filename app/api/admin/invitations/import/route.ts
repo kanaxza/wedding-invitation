@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
         const created = await prisma.invitationCode.create({
           data: {
             code: code,
-            note: inviteeName + (note ? ` - ${note}` : ''),
+            inviteeName: inviteeName + (note ? ` - ${note}` : ''),
             groupId: groupId,
             status: 'active',
           },

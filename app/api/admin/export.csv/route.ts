@@ -12,7 +12,11 @@ export async function GET(request: NextRequest) {
   try {
     const rsvps = await prisma.rSVP.findMany({
       include: {
-        invitationCode: true,
+        invitationCode: {
+          include: {
+            group: true,
+          },
+        },
       },
       orderBy: {
         updatedAt: 'desc',
@@ -21,26 +25,22 @@ export async function GET(request: NextRequest) {
 
     // Generate CSV
     const headers = [
-      'Code',
-      'Name',
-      'Phone',
       'Attending',
+      'Group Name',
+      'Invitee Name',
       'Guests Count',
       'Food Preferences',
       'Allergic Food',
-      'Created At',
       'Updated At',
     ];
 
     const rows = rsvps.map((r) => [
-      r.invitationCode.code,
-      r.name,
-      r.phone,
       r.attending ? 'Yes' : 'No',
+      r.invitationCode.group.name,
+      r.invitationCode.inviteeName || '-',
       r.guestsCount?.toString() || '-',
       r.foodPreferences || '-',
       r.allergicFood || '-',
-      r.createdAt.toISOString(),
       r.updatedAt.toISOString(),
     ]);
 

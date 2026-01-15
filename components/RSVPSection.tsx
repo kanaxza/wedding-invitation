@@ -12,7 +12,6 @@ import { useLanguage } from '@/lib/LanguageContext';
 type Step = 'code' | 'form' | 'success';
 
 interface RSVPData {
-  name: string;
   phone: string;
   attending: boolean;
   guestsCount: number | null;
@@ -31,7 +30,6 @@ export function RSVPSection() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<RSVPData>({
-    name: '',
     phone: '',
     attending: true,
     guestsCount: 0,
@@ -219,7 +217,6 @@ export function RSVPSection() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code: code.trim(),
-          name: formData.name.trim() || inviteeName,
           phone: formData.phone.trim() || '-',
           attending: formData.attending,
           guestsCount: formData.attending ? (formData.guestsCount || 0) + 1 : null,

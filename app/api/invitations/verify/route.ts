@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       status: invitation.status,
-      inviteeName: invitation.note,
+      inviteeName: invitation.inviteeName,
       groupName: invitation.group.name,
     });
   } catch (error) {

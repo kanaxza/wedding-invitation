@@ -17,6 +17,8 @@ interface RSVP {
   foodPreferences: string | null;
   allergicFood: string | null;
   updatedAt: string;
+  groupName?: string;
+  inviteeName?: string;
 }
 
 interface Summary {
@@ -30,7 +32,7 @@ interface Invitation {
   id: string;
   code: string;
   status: string;
-  note: string | null;
+  inviteeName: string | null;
   groupId: string;
   group: {
     id: string;
@@ -787,7 +789,7 @@ export default function AdminPage() {
             <div className="flex items-center justify-between">
               <CardTitle>Invitation Codes ({invitations.filter(inv => {
                 const matchesGroup = filterGroup === 'all' || inv.group.name === filterGroup;
-                const matchesName = filterInviteeName === '' || (inv.note?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
+                const matchesName = filterInviteeName === '' || (inv.inviteeName?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
                 const matchesRsvp = filterRsvpStatus === 'all' || 
                   (filterRsvpStatus === 'attending' && inv.rsvp?.attending) ||
                   (filterRsvpStatus === 'not-attending' && inv.rsvp && !inv.rsvp.attending) ||
@@ -967,11 +969,11 @@ export default function AdminPage() {
                             </div>
                           ) : (
                             <div className="flex items-center gap-2">
-                              <span>{invitation.note || '-'}</span>
+                              <span>{invitation.inviteeName || '-'}</span>
                               <button
                                 onClick={() => {
                                   setEditingId(invitation.id);
-                                  setEditInviteeName(invitation.note || '');
+                                  setEditInviteeName(invitation.inviteeName || '');
                                   setEditGroupId(invitation.groupId || '');
                                 }}
                                 className="text-blue-600 hover:text-blue-800 text-xs"
@@ -1010,7 +1012,7 @@ export default function AdminPage() {
                               {invitation.status}
                             </button>
                             <button
-                              onClick={() => handleDelete(invitation.id, invitation.code, invitation.note || 'Unknown')}
+                              onClick={() => handleDelete(invitation.id, invitation.code, invitation.inviteeName || 'Unknown')}
                               className="text-red-600 hover:text-red-800 font-medium"
                             >
                               Delete
@@ -1026,7 +1028,7 @@ export default function AdminPage() {
             {(() => {
               const filteredInvitations = invitations.filter(inv => {
                 const matchesGroup = filterGroup === 'all' || inv.group.name === filterGroup;
-                const matchesName = filterInviteeName === '' || (inv.note?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
+                const matchesName = filterInviteeName === '' || (inv.inviteeName?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
                 const matchesRsvp = filterRsvpStatus === 'all' || 
                   (filterRsvpStatus === 'attending' && inv.rsvp?.attending) ||
                   (filterRsvpStatus === 'not-attending' && inv.rsvp && !inv.rsvp.attending) ||
@@ -1145,7 +1147,10 @@ export default function AdminPage() {
                       Attending
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
+                      Group
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Invitee Name
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Guests
@@ -1158,9 +1163,6 @@ export default function AdminPage() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Updated
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Code
                     </th>
                   </tr>
                 </thead>
@@ -1187,8 +1189,11 @@ export default function AdminPage() {
                             {rsvp.attending ? 'Yes' : 'No'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {rsvp.name}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {rsvp.groupName || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {rsvp.inviteeName || '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {rsvp.guestsCount || '-'}
@@ -1213,9 +1218,6 @@ export default function AdminPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {new Date(rsvp.updatedAt).toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {rsvp.code}
                         </td>
                       </tr>
                     ))

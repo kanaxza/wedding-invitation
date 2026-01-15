@@ -10,7 +10,6 @@ export const invitationCodeSchema = z.object({
 
 export const rsvpFormSchema = z.object({
   code: z.string().min(1),
-  name: z.string().min(1, 'Full name is required').max(200),
   phone: z.string().min(1, 'Phone number is required').max(50),
   attending: z.boolean(),
   guestsCount: z.number().int().min(1).nullable(),
