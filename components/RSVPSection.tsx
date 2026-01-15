@@ -16,6 +16,9 @@ interface RSVPData {
   phone: string;
   attending: boolean;
   guestsCount: number | null;
+  foodPreferences: string[];
+  otherFood: string;
+  allergicFood: string;
 }
 
 export function RSVPSection() {
@@ -32,6 +35,9 @@ export function RSVPSection() {
     phone: '',
     attending: true,
     guestsCount: 0,
+    foodPreferences: [],
+    otherFood: '',
+    allergicFood: '',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -81,11 +87,16 @@ export function RSVPSection() {
           const rsvpData = await rsvpResponse.json();
           if (rsvpData.rsvp) {
             const followerCount = rsvpData.rsvp.guestsCount ? Math.max(0, rsvpData.rsvp.guestsCount - 1) : 0;
+            const foodPrefsArray = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').filter((p: string) => !p.startsWith('Other:')) : [];
+            const otherMatch = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').find((p: string) => p.startsWith('Other:')) : '';
             setFormData({
               name: rsvpData.rsvp.name,
               phone: rsvpData.rsvp.phone,
               attending: rsvpData.rsvp.attending,
               guestsCount: followerCount,
+              foodPreferences: foodPrefsArray,
+              otherFood: otherMatch ? otherMatch.replace('Other:', '') : '',
+              allergicFood: rsvpData.rsvp.allergicFood || '',
             });
           }
         }
@@ -148,11 +159,16 @@ export function RSVPSection() {
               // Prefill form with existing data
               // Convert total guests back to follower count (subtract 1 for the invitee)
               const followerCount = rsvpData.rsvp.guestsCount ? Math.max(0, rsvpData.rsvp.guestsCount - 1) : 0;
+              const foodPrefsArray = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').filter((p: string) => !p.startsWith('Other:')) : [];
+              const otherMatch = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').find((p: string) => p.startsWith('Other:')) : '';
               setFormData({
                 name: rsvpData.rsvp.name,
                 phone: rsvpData.rsvp.phone,
                 attending: rsvpData.rsvp.attending,
                 guestsCount: followerCount,
+                foodPreferences: foodPrefsArray,
+                otherFood: otherMatch ? otherMatch.replace('Other:', '') : '',
+                allergicFood: rsvpData.rsvp.allergicFood || '',
               });
             }
           }
@@ -191,6 +207,13 @@ export function RSVPSection() {
     setFormErrors({});
 
     try {
+      // Build food preferences string
+      const foodPrefsArray = [...formData.foodPreferences];
+      if (formData.otherFood.trim()) {
+        foodPrefsArray.push(`Other:${formData.otherFood.trim()}`);
+      }
+      const foodPreferencesStr = foodPrefsArray.length > 0 ? foodPrefsArray.join('|') : undefined;
+      
       const response = await fetch('/api/rsvp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -200,6 +223,8 @@ export function RSVPSection() {
           phone: formData.phone.trim() || '-',
           attending: formData.attending,
           guestsCount: formData.attending ? (formData.guestsCount || 0) + 1 : null,
+          foodPreferences: foodPreferencesStr,
+          allergicFood: formData.allergicFood.trim() || undefined,
         }),
       });
 
@@ -283,26 +308,117 @@ export function RSVPSection() {
                 />
 
                 {formData.attending && (
-                  <Select
-                    label={t('numberOfFollowers')}
-                    options={[
-                      { value: '0', label: t('justMe') },
-                      { value: '1', label: '1' },
-                      { value: '2', label: '2' },
-                      { value: '3', label: '3' },
-                      { value: '4', label: '4' },
-                      { value: '5', label: '5' },
-                    ]}
-                    value={formData.guestsCount?.toString() || '0'}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        guestsCount: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    error={formErrors.guestsCount}
-                    disabled={isLoading}
-                  />
+                  <>
+                    <Select
+                      label={t('numberOfFollowers')}
+                      options={[
+                        { value: '0', label: t('justMe') },
+                        { value: '1', label: '1' },
+                        { value: '2', label: '2' },
+                        { value: '3', label: '3' },
+                        { value: '4', label: '4' },
+                        { value: '5', label: '5' },
+                      ]}
+                      value={formData.guestsCount?.toString() || '0'}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          guestsCount: parseInt(e.target.value) || 0,
+                        })
+                      }
+                      error={formErrors.guestsCount}
+                      disabled={isLoading}
+                    />
+
+                    {/* Dietary Restrictions */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        {t('dietaryRestrictions')} {t('optional')}
+                      </label>
+                      <p className="text-xs text-gray-500 mb-3">
+                        {t('dietaryRestrictionsDesc')}
+                      </p>
+                      
+                      <div className="space-y-2">
+                        {['halalFood', 'vegetarianFood', 'nonBeef'].map((pref) => (
+                          <label key={pref} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.foodPreferences.includes(pref)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setFormData({
+                                    ...formData,
+                                    foodPreferences: [...formData.foodPreferences, pref],
+                                  });
+                                } else {
+                                  setFormData({
+                                    ...formData,
+                                    foodPreferences: formData.foodPreferences.filter(p => p !== pref),
+                                  });
+                                }
+                              }}
+                              disabled={isLoading}
+                              className="w-4 h-4 text-[#B18A3D] border-gray-300 rounded focus:ring-[#B18A3D]"
+                            />
+                            <span className="text-sm text-gray-700">{t(pref as any)}</span>
+                          </label>
+                        ))}
+                        
+                        {/* Other with text input */}
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.otherFood !== ''}
+                              onChange={(e) => {
+                                if (!e.target.checked) {
+                                  setFormData({ ...formData, otherFood: '' });
+                                }
+                              }}
+                              disabled={isLoading}
+                              className="w-4 h-4 text-[#B18A3D] border-gray-300 rounded focus:ring-[#B18A3D]"
+                            />
+                            <span className="text-sm text-gray-700">{t('other')}</span>
+                          </label>
+                          {formData.otherFood !== '' && (
+                            <input
+                              type="text"
+                              value={formData.otherFood}
+                              onChange={(e) => {
+                                const value = e.target.value.slice(0, 200);
+                                setFormData({ ...formData, otherFood: value });
+                              }}
+                              placeholder={t('otherPlaceholder')}
+                              disabled={isLoading}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Allergic Food */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        {t('allergicFood')} {t('optional')}
+                      </label>
+                      <textarea
+                        value={formData.allergicFood}
+                        onChange={(e) => {
+                          const value = e.target.value.slice(0, 200);
+                          setFormData({ ...formData, allergicFood: value });
+                        }}
+                        placeholder={t('allergicFoodPlaceholder')}
+                        rows={2}
+                        disabled={isLoading}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent resize-none"
+                      />
+                      <p className="text-xs text-gray-400 text-right">
+                        {formData.allergicFood.length}/200
+                      </p>
+                    </div>
+                  </>
                 )}
 
                 {error && (
@@ -376,6 +492,9 @@ export function RSVPSection() {
                         phone: '',
                         attending: true,
                         guestsCount: 0,
+                        foodPreferences: [],
+                        otherFood: '',
+                        allergicFood: '',
                       });
                       setError('');
                       setFormErrors({});

@@ -14,6 +14,8 @@ export const rsvpFormSchema = z.object({
   phone: z.string().min(1, 'Phone number is required').max(50),
   attending: z.boolean(),
   guestsCount: z.number().int().min(1).nullable(),
+  foodPreferences: z.string().max(500).optional(),
+  allergicFood: z.string().max(200).optional(),
 }).refine(
   (data) => {
     // If attending, guestsCount must be provided and >= 1

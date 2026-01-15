@@ -14,6 +14,8 @@ interface RSVP {
   phone: string;
   attending: boolean;
   guestsCount: number | null;
+  foodPreferences: string | null;
+  allergicFood: string | null;
   updatedAt: string;
 }
 
@@ -904,6 +906,12 @@ export default function AdminPage() {
                       Guests
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Food Preferences
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Allergic Food
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Updated
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -914,7 +922,7 @@ export default function AdminPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {rsvps.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                         No RSVPs yet
                       </td>
                     </tr>
@@ -939,6 +947,24 @@ export default function AdminPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {rsvp.guestsCount || '-'}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                          {rsvp.foodPreferences ? (
+                            <div className="space-y-1">
+                              {rsvp.foodPreferences.split('|').map((pref, idx) => (
+                                <div key={idx} className="text-xs bg-amber-50 text-amber-800 px-2 py-1 rounded inline-block mr-1">
+                                  {pref.startsWith('Other:') ? pref : pref.replace(/([A-Z])/g, ' $1').trim()}
+                                </div>
+                              ))}
+                            </div>
+                          ) : '-'}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                          {rsvp.allergicFood ? (
+                            <div className="text-xs bg-red-50 text-red-800 px-2 py-1 rounded">
+                              {rsvp.allergicFood}
+                            </div>
+                          ) : '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {new Date(rsvp.updatedAt).toLocaleString()}

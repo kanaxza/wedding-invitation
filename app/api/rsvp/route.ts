@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { code, name, phone, attending, guestsCount } = validation.data;
+    const { code, name, phone, attending, guestsCount, foodPreferences, allergicFood } = validation.data;
 
     // Find the invitation code
     const invitation = await prisma.invitationCode.findUnique({
@@ -80,6 +80,8 @@ export async function POST(request: NextRequest) {
         phone,
         attending,
         guestsCount: attending ? guestsCount : null,
+        foodPreferences: foodPreferences || null,
+        allergicFood: allergicFood || null,
       },
       create: {
         invitationCodeId: invitation.id,
@@ -87,6 +89,8 @@ export async function POST(request: NextRequest) {
         phone,
         attending,
         guestsCount: attending ? guestsCount : null,
+        foodPreferences: foodPreferences || null,
+        allergicFood: allergicFood || null,
       },
     });
 

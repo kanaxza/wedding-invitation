@@ -54,6 +54,18 @@ export const translations = {
     networkError: "Network error. Please check your connection and try again.",
     pleaseSpecifyFollowers: "Please specify number of followers",
     submitFailed: "Failed to submit RSVP. Please try again.",
+    
+    // Dietary Restrictions
+    dietaryRestrictions: "Dietary Restrictions",
+    dietaryRestrictionsDesc: "We love to prepare your prefer food, Please let us know.",
+    halalFood: "Halal Food",
+    vegetarianFood: "Vegetarian Food",
+    nonBeef: "Non-Beef",
+    other: "Other",
+    otherPlaceholder: "Please specify...",
+    allergicFood: "Allergic Food",
+    allergicFoodPlaceholder: "e.g., Peanuts, Seafood, Dairy...",
+    optional: "(Optional)",
 
     // Contact Section
     contactUs: "Contact Us",
@@ -121,6 +133,18 @@ export const translations = {
     networkError: "เกิดข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อและลองอีกครั้ง",
     pleaseSpecifyFollowers: "กรุณาระบุจำนวนผู้ติดตาม",
     submitFailed: "ไม่สามารถส่ง RSVP ได้ กรุณาลองอีกครั้ง",
+    
+    // Dietary Restrictions
+    dietaryRestrictions: "อาหารที่เหมาะสมของท่าน",
+    dietaryRestrictionsDesc: "เรายินดีจะดูแลด้านอาหาร โปรดแจ้งเราได้เลย",
+    halalFood: "อาหารฮาลาล",
+    vegetarianFood: "อาหารเจ",
+    nonBeef: "ไม่ทานเนื้อวัว",
+    other: "อื่นๆ",
+    otherPlaceholder: "โปรดระบุ...",
+    allergicFood: "อาหารที่แพ้",
+    allergicFoodPlaceholder: "เช่น ถั่ว, อาหารทะเล, นม...",
+    optional: "(ไม่จำเป็น)",
 
     // Contact Section
     contactUs: "ติดต่อเรา",

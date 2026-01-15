@@ -39,6 +39,8 @@ model RSVP {
   phone            String
   attending        Boolean
   guestsCount      Int?
+  foodPreferences  String?
+  allergicFood     String?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 }

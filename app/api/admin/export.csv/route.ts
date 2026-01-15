@@ -26,6 +26,8 @@ export async function GET(request: NextRequest) {
       'Phone',
       'Attending',
       'Guests Count',
+      'Food Preferences',
+      'Allergic Food',
       'Created At',
       'Updated At',
     ];
@@ -36,6 +38,8 @@ export async function GET(request: NextRequest) {
       r.phone,
       r.attending ? 'Yes' : 'No',
       r.guestsCount?.toString() || '-',
+      r.foodPreferences || '-',
+      r.allergicFood || '-',
       r.createdAt.toISOString(),
       r.updatedAt.toISOString(),
     ]);
