@@ -159,7 +159,6 @@ export function RSVPSection() {
               const foodPrefsArray = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').filter((p: string) => !p.startsWith('Other:')) : [];
               const otherMatch = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').find((p: string) => p.startsWith('Other:')) : '';
               setFormData({
-                name: rsvpData.rsvp.name,
                 phone: rsvpData.rsvp.phone,
                 attending: rsvpData.rsvp.attending,
                 guestsCount: followerCount,
