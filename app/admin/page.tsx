@@ -113,6 +113,8 @@ export default function AdminPage() {
     allergicFood: '',
   });
   const [isSubmittingRsvp, setIsSubmittingRsvp] = useState(false);
+  const [deleteRsvpConfirm, setDeleteRsvpConfirm] = useState<{ rsvpId: string; inviteeName: string } | null>(null);
+  const [isDeletingRsvp, setIsDeletingRsvp] = useState(false);
 
   const showAlert = (message: string, type: 'error' | 'success' | 'info' = 'error', title?: string) => {
     setAlertModal({
@@ -653,17 +655,23 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteRsvp = async (rsvpId: string) => {
-    if (!confirm('Are you sure you want to delete this RSVP?')) return;
+  const handleDeleteRsvp = async (rsvpId: string, inviteeName: string) => {
+    setDeleteRsvpConfirm({ rsvpId, inviteeName });
+  };
 
+  const confirmDeleteRsvp = async () => {
+    if (!deleteRsvpConfirm) return;
+
+    setIsDeletingRsvp(true);
     try {
-      const response = await fetch(`/api/admin/rsvp?rsvpId=${rsvpId}`, {
+      const response = await fetch(`/api/admin/rsvp?rsvpId=${deleteRsvpConfirm.rsvpId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
 
       if (response.ok) {
         setRsvpModal(null);
+        setDeleteRsvpConfirm(null);
         await loadData();
         showAlert('RSVP deleted successfully', 'success');
       } else {
@@ -672,6 +680,8 @@ export default function AdminPage() {
       }
     } catch (error) {
       showAlert('An error occurred. Please try again.');
+    } finally {
+      setIsDeletingRsvp(false);
     }
   };
 
@@ -1915,7 +1925,7 @@ export default function AdminPage() {
                     type="button"
                     variant="secondary"
                     className="flex-1 !bg-gradient-to-br !from-red-700 !via-red-800 !to-red-900 hover:!from-red-800 hover:!via-red-900 hover:!to-red-950"
-                    onClick={() => handleDeleteRsvp(rsvpModal.rsvp!.id)}
+                    onClick={() => handleDeleteRsvp(rsvpModal.rsvp!.id, rsvpModal.invitation.inviteeName || 'Unknown')}
                   >
                     Delete RSVP
                   </Button>
@@ -1938,6 +1948,55 @@ export default function AdminPage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete RSVP Confirmation Modal */}
+      {deleteRsvpConfirm && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setDeleteRsvpConfirm(null)}
+        >
+          <div 
+            className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-6">
+              <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Delete RSVP</h3>
+              <p className="text-gray-600 mb-1">
+                Are you sure you want to delete the RSVP for
+              </p>
+              <p className="text-lg font-bold text-gray-900">
+                "{deleteRsvpConfirm.inviteeName}"?
+              </p>
+              <p className="text-sm text-red-600 mt-2">
+                This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setDeleteRsvpConfirm(null)}
+                disabled={isDeletingRsvp}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="secondary"
+                className="flex-1 !bg-gradient-to-br !from-red-700 !via-red-800 !to-red-900 hover:!from-red-800 hover:!via-red-900 hover:!to-red-950"
+                onClick={confirmDeleteRsvp}
+                disabled={isDeletingRsvp}
+              >
+                {isDeletingRsvp ? <LoadingSpinner size="sm" /> : 'Delete'}
+              </Button>
+            </div>
           </div>
         </div>
       )}
