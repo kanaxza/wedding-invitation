@@ -54,6 +54,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -166,6 +167,7 @@ export default function AdminPage() {
   };
 
   const loadData = async () => {
+    setIsRefreshing(true);
     try {
       const [summaryRes, invitationsRes, groupsRes] = await Promise.all([
         fetch('/api/admin/summary', { credentials: 'include' }),
@@ -193,6 +195,8 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error('Failed to load data:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -728,7 +732,22 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <button
+              onClick={loadData}
+              disabled={isRefreshing}
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Refresh data"
+            >
+              <svg className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+            {isRefreshing && (
+              <span className="text-sm text-gray-500 animate-pulse">Refreshing...</span>
+            )}
+          </div>
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => router.push('/')}>
               View Site
