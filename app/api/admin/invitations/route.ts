@@ -121,7 +121,7 @@ export async function PATCH(request: NextRequest) {
       updateData.status = status;
     }
     if (inviteeName !== undefined && inviteeName.trim()) {
-      updateData.note = inviteeName.trim();
+      updateData.inviteeName = inviteeName.trim();
     }
     if (groupId !== undefined && groupId.trim()) {
       updateData.groupId = groupId.trim();

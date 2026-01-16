@@ -821,95 +821,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Create Invitation Code */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Create Invitation</CardTitle>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleDownloadTemplate}
-                  className="flex items-center gap-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Download Template
-                </Button>
-                <Button
-                  onClick={handleImportCSV}
-                  disabled={isImporting}
-                  className="flex items-center gap-2 bg-gradient-to-br from-[#C99A4D] via-[#A67C38] to-[#8B6B29] text-white hover:from-[#D4A857] hover:via-[#B18A3D] hover:to-[#9A7330] active:from-[#A67C38] active:to-[#7A5F25] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/40 before:via-transparent before:to-black/20 before:transition-opacity after:absolute after:inset-0 after:bg-[linear-gradient(110deg,transparent_25%,rgba(255,255,255,0.3)_50%,transparent_75%)] after:translate-x-[-200%] hover:after:translate-x-[200%] after:transition-transform after:duration-700"
-                >
-                  {isImporting ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                  )}
-                  Import CSV
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCreateCode} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                <Input
-                  label="Invitee Name *"
-                  placeholder="e.g., John & Jane Smith"
-                  value={newInviteeName}
-                  onChange={(e) => setNewInviteeName(e.target.value)}
-                  disabled={isCreating}
-                  required
-                  ref={inviteeNameInputRef}
-                />
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Group *
-                  </label>
-                  <select
-                    value={newGroupId}
-                    onChange={(e) => setNewGroupId(e.target.value)}
-                    disabled={isCreating}
-                    required
-                    className="w-full h-[42px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
-                  >
-                    <option value="">Select a group...</option>
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <Input
-                    label="Invitation Code (Optional)"
-                    placeholder="Leave empty to auto-generate"
-                    value={newCode}
-                    onChange={(e) => setNewCode(e.target.value.toUpperCase())}
-                    error={createError}
-                    disabled={isCreating}
-                  />
-                </div>
-              </div>
-              <Button type="submit" disabled={isCreating} className="h-[42px]">
-                {isCreating ? <LoadingSpinner size="sm" /> : 'Create'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
         {/* Import Results */}
         {importResult && (
           <Card className="mb-8">
@@ -1441,6 +1352,95 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Create Invitation Code */}
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Create Invitation</CardTitle>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadTemplate}
+                  className="flex items-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download Template
+                </Button>
+                <Button
+                  onClick={handleImportCSV}
+                  disabled={isImporting}
+                  className="flex items-center gap-2 bg-gradient-to-br from-[#C99A4D] via-[#A67C38] to-[#8B6B29] text-white hover:from-[#D4A857] hover:via-[#B18A3D] hover:to-[#9A7330] active:from-[#A67C38] active:to-[#7A5F25] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/40 before:via-transparent before:to-black/20 before:transition-opacity after:absolute after:inset-0 after:bg-[linear-gradient(110deg,transparent_25%,rgba(255,255,255,0.3)_50%,transparent_75%)] after:translate-x-[-200%] hover:after:translate-x-[200%] after:transition-transform after:duration-700"
+                >
+                  {isImporting ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  )}
+                  Import CSV
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleCreateCode} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                <Input
+                  label="Invitee Name *"
+                  placeholder="e.g., John & Jane Smith"
+                  value={newInviteeName}
+                  onChange={(e) => setNewInviteeName(e.target.value)}
+                  disabled={isCreating}
+                  required
+                  ref={inviteeNameInputRef}
+                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Group *
+                  </label>
+                  <select
+                    value={newGroupId}
+                    onChange={(e) => setNewGroupId(e.target.value)}
+                    disabled={isCreating}
+                    required
+                    className="w-full h-[42px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
+                  >
+                    <option value="">Select a group...</option>
+                    {groups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Input
+                    label="Invitation Code (Optional)"
+                    placeholder="Leave empty to auto-generate"
+                    value={newCode}
+                    onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                    error={createError}
+                    disabled={isCreating}
+                  />
+                </div>
+              </div>
+              <Button type="submit" disabled={isCreating} className="h-[42px]">
+                {isCreating ? <LoadingSpinner size="sm" /> : 'Create'}
+              </Button>
+            </form>
           </CardContent>
         </Card>
 
