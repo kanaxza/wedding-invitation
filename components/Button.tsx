@@ -31,7 +31,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
         {...props}
       >
-        <span className="relative z-10">{children}</span>
+        <span className="relative z-10 flex items-center justify-center">{children}</span>
       </button>
     );
   }
