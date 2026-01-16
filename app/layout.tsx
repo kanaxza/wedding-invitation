@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { LanguageProvider } from '@/lib/LanguageContext';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   title: 'Wedding Invitation - Som & Gann',
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <LanguageProvider>{children}</LanguageProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
