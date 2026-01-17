@@ -95,7 +95,7 @@ export const translations = {
     coupleName2: "แก่น",
     venue: "โรงแรมมิราเคิล แกรนด์",
     city: "กรุงเทพฯ",
-    respondHere: "จะมาได้ไหมน้า...",
+    respondHere: "กดตรงนี้",
     seeMore: "ดูเพิ่มเติม...",
 
     // Event Details
