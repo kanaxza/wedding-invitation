@@ -55,6 +55,10 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoadingInvitations, setIsLoadingInvitations] = useState(false);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(false);
+  const [invitationsLoaded, setInvitationsLoaded] = useState(false);
+  const [groupsLoaded, setGroupsLoaded] = useState(false);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -94,6 +98,7 @@ export default function AdminPage() {
   const [invitationsPageSize, setInvitationsPageSize] = useState(10);
   const [rsvpsPageSize, setRsvpsPageSize] = useState(10);
   const [alertModal, setAlertModal] = useState<{ title: string; message: string; type: 'error' | 'success' | 'info'; onClose?: () => void } | null>(null);
+  const [createInvitationModal, setCreateInvitationModal] = useState(false);
   const inviteeNameInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<{
@@ -102,6 +107,7 @@ export default function AdminPage() {
     errorCount: number;
     errors: Array<{ row: number; code?: string; inviteeName: string; error: string }>;
     imported: Array<{ code: string; inviteeName: string; groupName: string }>;
+    errorLog?: string;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [rsvpModal, setRsvpModal] = useState<{ invitation: Invitation; rsvp: RSVP | null } | null>(null);
@@ -130,6 +136,15 @@ export default function AdminPage() {
     checkAuth();
   }, []);
 
+  // Load groups and invitations data after authentication
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Start loading invitations and groups in background
+      loadInvitations();
+      loadGroups();
+    }
+  }, [isAuthenticated]);
+
   const copyInvitationUrl = async (code: string, lang: 'th' | 'en') => {
     const baseUrl = window.location.origin;
     const invitationUrl = `${baseUrl}/?code=${code}&lang=${lang}`;
@@ -157,12 +172,66 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/summary', { credentials: 'include' });
       if (response.ok) {
         setIsAuthenticated(true);
-        await loadData();
+        await loadSummaryData();
       }
     } catch (error) {
       console.error('Auth check failed:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadSummaryData = async () => {
+    setIsRefreshing(true);
+    try {
+      const summaryRes = await fetch('/api/admin/summary', { credentials: 'include' });
+
+      if (summaryRes.ok) {
+        const data = await summaryRes.json();
+        setSummary(data.summary);
+        setRsvps(data.rsvps);
+      } else {
+        console.error('Summary fetch failed:', summaryRes.status);
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error('Failed to load summary data:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const loadInvitations = async (forceReload = false) => {
+    if (invitationsLoaded && !forceReload) return;
+    setIsLoadingInvitations(true);
+    try {
+      const invitationsRes = await fetch('/api/admin/invitations', { credentials: 'include' });
+      if (invitationsRes.ok) {
+        const data = await invitationsRes.json();
+        setInvitations(data.invitations);
+        setInvitationsLoaded(true);
+      }
+    } catch (error) {
+      console.error('Failed to load invitations:', error);
+    } finally {
+      setIsLoadingInvitations(false);
+    }
+  };
+
+  const loadGroups = async () => {
+    if (groupsLoaded) return;
+    setIsLoadingGroups(true);
+    try {
+      const groupsRes = await fetch('/api/admin/groups', { credentials: 'include' });
+      if (groupsRes.ok) {
+        const data = await groupsRes.json();
+        setGroups(data.groups);
+        setGroupsLoaded(true);
+      }
+    } catch (error) {
+      console.error('Failed to load groups:', error);
+    } finally {
+      setIsLoadingGroups(false);
     }
   };
 
@@ -187,11 +256,13 @@ export default function AdminPage() {
       if (invitationsRes.ok) {
         const data = await invitationsRes.json();
         setInvitations(data.invitations);
+        setInvitationsLoaded(true);
       }
 
       if (groupsRes.ok) {
         const data = await groupsRes.json();
         setGroups(data.groups);
+        setGroupsLoaded(true);
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -302,10 +373,12 @@ export default function AdminPage() {
       if (response.ok) {
         setNewCode('');
         setNewInviteeName('');
+        setCreateError('');
         // Keep groupId for next entry
-        await loadData();
+        // Show success message briefly
+        showAlert('Invitation code created successfully!', 'success', 'Success');
         // Focus the invitee name input for quick next entry
-        setTimeout(() => inviteeNameInputRef.current?.focus(), 0);
+        setTimeout(() => inviteeNameInputRef.current?.focus(), 100);
       } else {
         setCreateError(data.error || 'Failed to create invitation code');
       }
@@ -542,20 +615,23 @@ export default function AdminPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setImportResult(data);
+        // Generate error log
+        let errorLog = '';
+        if (data.errors && data.errors.length > 0) {
+          errorLog = `Import Errors (${data.errorCount} total):\n\n`;
+          data.errors.forEach((err: any) => {
+            errorLog += `Row ${err.row}: ${err.inviteeName || 'N/A'} - ${err.error}\n`;
+            if (err.code) errorLog += `  Code: ${err.code}\n`;
+          });
+        }
+
+        setImportResult({
+          ...data,
+          errorLog
+        });
+        
         if (data.successCount > 0) {
-          await loadData();
-          showAlert(
-            `Successfully imported ${data.successCount} invitation code(s)${data.errorCount > 0 ? `. ${data.errorCount} error(s) occurred.` : '.'}`,
-            data.errorCount === 0 ? 'success' : 'info',
-            'Import Complete'
-          );
-        } else {
-          showAlert(
-            `Import failed. ${data.errorCount} error(s) occurred.`,
-            'error',
-            'Import Failed'
-          );
+          await loadInvitations();
         }
       } else {
         showAlert(data.error || 'Failed to import CSV');
@@ -729,6 +805,18 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Loading Overlay */}
+      {isLoadingInvitations && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 shadow-lg">
+          <div className="max-w-7xl mx-auto flex items-center justify-center gap-3">
+            <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span className="font-medium">Refreshing invitations...</span>
+          </div>
+        </div>
+      )}
+      
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -820,92 +908,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Import Results */}
-        {importResult && (
-          <Card className="mb-8">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Import Results</CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setImportResult(null)}
-                >
-                  Close
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <div className="text-sm text-green-600 font-medium">Successful</div>
-                    <div className="text-2xl font-bold text-green-700">{importResult.successCount}</div>
-                  </div>
-                  <div className="bg-red-50 p-4 rounded-lg">
-                    <div className="text-sm text-red-600 font-medium">Failed</div>
-                    <div className="text-2xl font-bold text-red-700">{importResult.errorCount}</div>
-                  </div>
-                </div>
-
-                {importResult.imported.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Successfully Imported:</h3>
-                    <div className="bg-green-50 rounded-lg p-4 max-h-48 overflow-y-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="text-left text-gray-600">
-                            <th className="pb-2">Code</th>
-                            <th className="pb-2">Invitee Name</th>
-                            <th className="pb-2">Group</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {importResult.imported.map((item, idx) => (
-                            <tr key={idx} className="border-t border-green-200">
-                              <td className="py-1 font-mono text-green-700">{item.code}</td>
-                              <td className="py-1">{item.inviteeName}</td>
-                              <td className="py-1 text-gray-600">{item.groupName}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {importResult.errors.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Errors:</h3>
-                    <div className="bg-red-50 rounded-lg p-4 max-h-48 overflow-y-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="text-left text-gray-600">
-                            <th className="pb-2">Row</th>
-                            <th className="pb-2">Code</th>
-                            <th className="pb-2">Invitee Name</th>
-                            <th className="pb-2">Error</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {importResult.errors.map((error, idx) => (
-                            <tr key={idx} className="border-t border-red-200">
-                              <td className="py-1 text-red-700">{error.row}</td>
-                              <td className="py-1 font-mono">{error.code || '-'}</td>
-                              <td className="py-1">{error.inviteeName}</td>
-                              <td className="py-1 text-red-600">{error.error}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Invitation Codes List */}
         <Card className="mb-8">
           <CardHeader>
@@ -919,13 +921,21 @@ export default function AdminPage() {
                   (filterRsvpStatus === 'no-response' && !inv.rsvp);
                 return matchesGroup && matchesName && matchesRsvp;
               }).length})</CardTitle>
-              <Button
-                variant="outline"
-                onClick={handleExport}
-                disabled={isExporting}
-              >
-                {isExporting ? <LoadingSpinner size="sm" /> : 'Export CSV'}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setCreateInvitationModal(true)}
+                  className="bg-gradient-to-br from-[#C99A4D] via-[#A67C38] to-[#8B6B29] text-white hover:from-[#D4A857] hover:via-[#B18A3D] hover:to-[#9A7330]"
+                >
+                  + Add Invitation
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleExport}
+                  disabled={isExporting}
+                >
+                  {isExporting ? <LoadingSpinner size="sm" /> : 'Export CSV'}
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -976,6 +986,11 @@ export default function AdminPage() {
               </div>
             </div>
             <div className="overflow-x-auto">
+              {isLoadingInvitations ? (
+                <div className="flex justify-center items-center py-12">
+                  <LoadingSpinner />
+                </div>
+              ) : (
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -1153,6 +1168,7 @@ export default function AdminPage() {
                   )}
                 </tbody>
               </table>
+              )}
             </div>
             {(() => {
               const filteredInvitations = invitations.filter(inv => {
@@ -1354,95 +1370,6 @@ export default function AdminPage() {
           </CardContent>
         </Card>
 
-        {/* Create Invitation Code */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Create Invitation</CardTitle>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleDownloadTemplate}
-                  className="flex items-center gap-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Download Template
-                </Button>
-                <Button
-                  onClick={handleImportCSV}
-                  disabled={isImporting}
-                  className="flex items-center gap-2 bg-gradient-to-br from-[#C99A4D] via-[#A67C38] to-[#8B6B29] text-white hover:from-[#D4A857] hover:via-[#B18A3D] hover:to-[#9A7330] active:from-[#A67C38] active:to-[#7A5F25] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/40 before:via-transparent before:to-black/20 before:transition-opacity after:absolute after:inset-0 after:bg-[linear-gradient(110deg,transparent_25%,rgba(255,255,255,0.3)_50%,transparent_75%)] after:translate-x-[-200%] hover:after:translate-x-[200%] after:transition-transform after:duration-700"
-                >
-                  {isImporting ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                  )}
-                  Import CSV
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCreateCode} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                <Input
-                  label="Invitee Name *"
-                  placeholder="e.g., John & Jane Smith"
-                  value={newInviteeName}
-                  onChange={(e) => setNewInviteeName(e.target.value)}
-                  disabled={isCreating}
-                  required
-                  ref={inviteeNameInputRef}
-                />
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Group *
-                  </label>
-                  <select
-                    value={newGroupId}
-                    onChange={(e) => setNewGroupId(e.target.value)}
-                    disabled={isCreating}
-                    required
-                    className="w-full h-[42px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
-                  >
-                    <option value="">Select a group...</option>
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <Input
-                    label="Invitation Code (Optional)"
-                    placeholder="Leave empty to auto-generate"
-                    value={newCode}
-                    onChange={(e) => setNewCode(e.target.value.toUpperCase())}
-                    error={createError}
-                    disabled={isCreating}
-                  />
-                </div>
-              </div>
-              <Button type="submit" disabled={isCreating} className="h-[42px]">
-                {isCreating ? <LoadingSpinner size="sm" /> : 'Create'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
         {/* Manage Groups */}
         <div className="mt-12">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Manage Groups</h2>
@@ -1466,6 +1393,11 @@ export default function AdminPage() {
                 </Button>
               </div>
             </form>
+            {isLoadingGroups ? (
+              <div className="flex justify-center items-center py-12">
+                <LoadingSpinner />
+              </div>
+            ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -1581,7 +1513,8 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
-            {groups.length > 0 && (
+            )}
+            {!isLoadingGroups && groups.length > 0 && (
               <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="text-sm text-gray-700">
@@ -1777,6 +1710,180 @@ export default function AdminPage() {
               >
                 OK
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Invitation Modal */}
+      {createInvitationModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => {
+            setCreateInvitationModal(false);
+            loadInvitations(true);
+          }}
+        >
+          <div 
+            className="bg-white rounded-xl p-6 max-w-4xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-semibold text-gray-900">
+                Create Invitation Codes
+              </h3>
+              <button
+                onClick={() => {
+                  setCreateInvitationModal(false);
+                  loadInvitations(true);
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Import Options */}
+              <div className="flex gap-2 pb-4 border-b">
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadTemplate}
+                  className="flex items-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download CSV Template
+                </Button>
+                <Button
+                  onClick={handleImportCSV}
+                  disabled={isImporting}
+                  className="flex items-center gap-2 bg-gradient-to-br from-[#C99A4D] via-[#A67C38] to-[#8B6B29] text-white hover:from-[#D4A857] hover:via-[#B18A3D] hover:to-[#9A7330]"
+                >
+                  {isImporting ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  )}
+                  Import from CSV
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Import Result Summary */}
+              {importResult && (
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-gray-900">Import Summary</h4>
+                    <button
+                      onClick={() => setImportResult(null)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className={`p-3 rounded-lg ${importResult.successCount > 0 ? 'bg-green-100' : 'bg-gray-100'}`}>
+                      <div className="text-sm font-medium text-gray-600">Success</div>
+                      <div className={`text-2xl font-bold ${importResult.successCount > 0 ? 'text-green-700' : 'text-gray-400'}`}>
+                        {importResult.successCount}
+                      </div>
+                    </div>
+                    <div className={`p-3 rounded-lg ${importResult.errorCount > 0 ? 'bg-red-100' : 'bg-gray-100'}`}>
+                      <div className="text-sm font-medium text-gray-600">Failed</div>
+                      <div className={`text-2xl font-bold ${importResult.errorCount > 0 ? 'text-red-700' : 'text-gray-400'}`}>
+                        {importResult.errorCount}
+                      </div>
+                    </div>
+                  </div>
+
+                  {importResult.errorLog && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">Error Log</label>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            navigator.clipboard.writeText(importResult.errorLog!);
+                            showAlert('Error log copied to clipboard!', 'success');
+                          }}
+                          className="text-xs"
+                        >
+                          Copy to Clipboard
+                        </Button>
+                      </div>
+                      <textarea
+                        readOnly
+                        value={importResult.errorLog}
+                        className="w-full h-40 px-3 py-2 text-xs font-mono border border-gray-300 rounded-lg bg-white resize-none"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Create Form */}
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-3">Add Single Invitation</h4>
+                <form onSubmit={handleCreateCode} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Input
+                      label="Invitee Name *"
+                      placeholder="e.g., John & Jane Smith"
+                      value={newInviteeName}
+                      onChange={(e) => setNewInviteeName(e.target.value)}
+                      disabled={isCreating}
+                      required
+                      ref={inviteeNameInputRef}
+                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Group *
+                      </label>
+                      <select
+                        value={newGroupId}
+                        onChange={(e) => setNewGroupId(e.target.value)}
+                        disabled={isCreating}
+                        required
+                        className="w-full h-[42px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
+                      >
+                        <option value="">Select a group...</option>
+                        {groups.map((group) => (
+                          <option key={group.id} value={group.id}>
+                            {group.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <Input
+                      label="Invitation Code (Optional)"
+                      placeholder="Leave empty to auto-generate"
+                      value={newCode}
+                      onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                      error={createError}
+                      disabled={isCreating}
+                    />
+                  </div>
+                  <Button type="submit" disabled={isCreating} className="h-[42px] w-full md:w-auto">
+                    {isCreating ? <LoadingSpinner size="sm" /> : '+ Add Invitation Code'}
+                  </Button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
