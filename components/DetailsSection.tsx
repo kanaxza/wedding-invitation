@@ -244,6 +244,38 @@ export function DetailsSection() {
           </CardContent>
         </Card>
 
+        {/* Dress Code Card */}
+        <Card>
+          <CardContent>
+            <div className="text-center">
+              <div className="mb-3" style={{ color: '#A67C38' }}>
+                <svg
+                  className="w-12 h-12 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">{t('dressCode')}</h3>
+              {/* Pastel Metallic Colors: Blue, Pink, Rose Gold, Gold */}
+              <div className="flex justify-center gap-1 mb-3">
+                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #C5D8E8, #A8C5E0)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(165, 197, 224, 0.5), inset 2px 2px 4px rgba(255,255,255,0.3)' }} title="Pastel Metallic Blue"></div>
+                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #F5D1E0, #F0BBD3)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(240, 187, 211, 0.5), inset 2px 2px 4px rgba(255,255,255,0.3)' }} title="Pastel Metallic Pink"></div>
+                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #ECC5C0, #E6B8B3)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(230, 184, 179, 0.5), inset 2px 2px 4px rgba(255,255,255,0.4)' }} title="Pastel Metallic Rose Gold"></div>
+                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #F5E6C8, #EED9B0)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(238, 217, 176, 0.5), inset 2px 2px 4px rgba(255,255,255,0.4)' }} title="Pastel Metallic Gold"></div>
+              </div>
+              <p className="text-gray-600">{t('dressCodeDescription')}</p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Cashless Society Card */}
         <Card>
           <CardContent>
@@ -275,38 +307,6 @@ export function DetailsSection() {
               >
                 {t('qrPromptPay')}
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Dress Code Card */}
-        <Card>
-          <CardContent>
-            <div className="text-center">
-              <div className="mb-3" style={{ color: '#A67C38' }}>
-                <svg
-                  className="w-12 h-12 mx-auto"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-lg mb-2">{t('dressCode')}</h3>
-              {/* Pastel Metallic Colors: Blue, Pink, Rose Gold, Gold */}
-              <div className="flex justify-center gap-1 mb-3">
-                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #C5D8E8, #A8C5E0)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(165, 197, 224, 0.5), inset 2px 2px 4px rgba(255,255,255,0.3)' }} title="Pastel Metallic Blue"></div>
-                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #F5D1E0, #F0BBD3)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(240, 187, 211, 0.5), inset 2px 2px 4px rgba(255,255,255,0.3)' }} title="Pastel Metallic Pink"></div>
-                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #ECC5C0, #E6B8B3)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(230, 184, 179, 0.5), inset 2px 2px 4px rgba(255,255,255,0.4)' }} title="Pastel Metallic Rose Gold"></div>
-                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #F5E6C8, #EED9B0)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(238, 217, 176, 0.5), inset 2px 2px 4px rgba(255,255,255,0.4)' }} title="Pastel Metallic Gold"></div>
-              </div>
-              <p className="text-gray-600">{t('dressCodeDescription')}</p>
             </div>
           </CardContent>
         </Card>
