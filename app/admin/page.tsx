@@ -108,7 +108,7 @@ export default function AdminPage() {
   const [rsvpFormData, setRsvpFormData] = useState({
     phone: '',
     attending: true,
-    guestsCount: 0,
+    guestsCount: 1,
     foodPreferences: [] as string[],
     otherFood: '',
     allergicFood: '',
@@ -574,7 +574,6 @@ export default function AdminPage() {
     setRsvpModal({ invitation, rsvp: invitation.rsvp });
     if (invitation.rsvp) {
       // Parse existing RSVP data
-      const followerCount = invitation.rsvp.guestsCount ? Math.max(0, invitation.rsvp.guestsCount - 1) : 0;
       const foodPrefsArray = invitation.rsvp.foodPreferences 
         ? invitation.rsvp.foodPreferences.split('|').filter(p => !p.startsWith('Other:')) 
         : [];
@@ -585,7 +584,7 @@ export default function AdminPage() {
       setRsvpFormData({
         phone: invitation.rsvp.phone || '',
         attending: invitation.rsvp.attending,
-        guestsCount: followerCount,
+        guestsCount: invitation.rsvp.guestsCount || 1,
         foodPreferences: foodPrefsArray,
         otherFood: otherMatch ? otherMatch.replace('Other:', '') : '',
         allergicFood: invitation.rsvp.allergicFood || '',
@@ -594,7 +593,7 @@ export default function AdminPage() {
       setRsvpFormData({
         phone: '',
         attending: true,
-        guestsCount: 0,
+        guestsCount: 1,
         foodPreferences: [],
         otherFood: '',
         allergicFood: '',
@@ -622,7 +621,7 @@ export default function AdminPage() {
             rsvpId: rsvpModal.rsvp.id,
             phone: rsvpFormData.phone.trim() || '-',
             attending: rsvpFormData.attending,
-            guestsCount: rsvpFormData.attending ? (rsvpFormData.guestsCount || 0) + 1 : null,
+            guestsCount: rsvpFormData.attending ? (rsvpFormData.guestsCount || 1) : null,
             foodPreferences: foodPreferencesStr,
             allergicFood: rsvpFormData.allergicFood.trim() || undefined,
           }
@@ -630,7 +629,7 @@ export default function AdminPage() {
             invitationCodeId: rsvpModal.invitation.id,
             phone: rsvpFormData.phone.trim() || '-',
             attending: rsvpFormData.attending,
-            guestsCount: rsvpFormData.attending ? (rsvpFormData.guestsCount || 0) + 1 : null,
+            guestsCount: rsvpFormData.attending ? (rsvpFormData.guestsCount || 1) : null,
             foodPreferences: foodPreferencesStr,
             allergicFood: rsvpFormData.allergicFood.trim() || undefined,
           };
@@ -1822,7 +1821,7 @@ export default function AdminPage() {
                   onChange={(e) => setRsvpFormData({ 
                     ...rsvpFormData, 
                     attending: e.target.value === 'true',
-                    guestsCount: e.target.value === 'true' ? 1 : 0,
+                    guestsCount: e.target.value === 'true' ? 1 : 1,
                   })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
                 >
@@ -1835,22 +1834,18 @@ export default function AdminPage() {
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Number of Followers *
+                      Number of Guests *
                     </label>
-                    <p className="text-xs text-gray-500 mb-2">
-                      (Not including yourself)
-                    </p>
                     <select
                       value={rsvpFormData.guestsCount.toString()}
-                      onChange={(e) => setRsvpFormData({ ...rsvpFormData, guestsCount: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => setRsvpFormData({ ...rsvpFormData, guestsCount: parseInt(e.target.value) || 1 })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
                     >
-                      <option value="0">Just Me</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
+                      <option value="1">1 person</option>
+                      <option value="2">2 people</option>
+                      <option value="3">3 people</option>
+                      <option value="4">4 people</option>
+                      <option value="5">5 people</option>
                     </select>
                   </div>
 

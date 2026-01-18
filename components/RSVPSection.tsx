@@ -32,7 +32,7 @@ export function RSVPSection() {
   const [formData, setFormData] = useState<RSVPData>({
     phone: '',
     attending: true,
-    guestsCount: 0,
+    guestsCount: 1,
     foodPreferences: [],
     otherFood: '',
     allergicFood: '',
@@ -84,13 +84,12 @@ export function RSVPSection() {
         if (rsvpResponse.ok) {
           const rsvpData = await rsvpResponse.json();
           if (rsvpData.rsvp) {
-            const followerCount = rsvpData.rsvp.guestsCount ? Math.max(0, rsvpData.rsvp.guestsCount - 1) : 0;
             const foodPrefsArray = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').filter((p: string) => !p.startsWith('Other:')) : [];
             const otherMatch = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').find((p: string) => p.startsWith('Other:')) : '';
             setFormData({
               phone: rsvpData.rsvp.phone,
               attending: rsvpData.rsvp.attending,
-              guestsCount: followerCount,
+              guestsCount: rsvpData.rsvp.guestsCount || 1,
               foodPreferences: foodPrefsArray,
               otherFood: otherMatch ? otherMatch.replace('Other:', '') : '',
               allergicFood: rsvpData.rsvp.allergicFood || '',
@@ -154,14 +153,12 @@ export function RSVPSection() {
             const rsvpData = await rsvpResponse.json();
             if (rsvpData.rsvp) {
               // Prefill form with existing data
-              // Convert total guests back to follower count (subtract 1 for the invitee)
-              const followerCount = rsvpData.rsvp.guestsCount ? Math.max(0, rsvpData.rsvp.guestsCount - 1) : 0;
               const foodPrefsArray = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').filter((p: string) => !p.startsWith('Other:')) : [];
               const otherMatch = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').find((p: string) => p.startsWith('Other:')) : '';
               setFormData({
                 phone: rsvpData.rsvp.phone,
                 attending: rsvpData.rsvp.attending,
-                guestsCount: followerCount,
+                guestsCount: rsvpData.rsvp.guestsCount || 1,
                 foodPreferences: foodPrefsArray,
                 otherFood: otherMatch ? otherMatch.replace('Other:', '') : '',
                 allergicFood: rsvpData.rsvp.allergicFood || '',
@@ -189,8 +186,8 @@ export function RSVPSection() {
   const submitRSVP = async () => {
     // Validate
     const errors: Record<string, string> = {};
-    if (formData.attending && (formData.guestsCount === null || formData.guestsCount < 0)) {
-      errors.guestsCount = t('pleaseSpecifyFollowers');
+    if (formData.attending && (formData.guestsCount === null || formData.guestsCount < 1)) {
+      errors.guestsCount = t('pleaseSpecifyGuests');
     }
 
     if (Object.keys(errors).length > 0) {
@@ -217,7 +214,7 @@ export function RSVPSection() {
           code: code.trim(),
           phone: formData.phone.trim() || '-',
           attending: formData.attending,
-          guestsCount: formData.attending ? (formData.guestsCount || 0) + 1 : null,
+          guestsCount: formData.attending ? (formData.guestsCount || 1) : null,
           foodPreferences: foodPreferencesStr,
           allergicFood: formData.allergicFood.trim() || undefined,
         }),
@@ -305,20 +302,19 @@ export function RSVPSection() {
                 {formData.attending && (
                   <>
                     <Select
-                      label={t('numberOfFollowers')}
+                      label={t('numberOfGuests')}
                       options={[
-                        { value: '0', label: t('justMe') },
-                        { value: '1', label: '1' },
-                        { value: '2', label: '2' },
-                        { value: '3', label: '3' },
-                        { value: '4', label: '4' },
-                        { value: '5', label: '5' },
+                        { value: '1', label: t('guest1') },
+                        { value: '2', label: t('guest2') },
+                        { value: '3', label: t('guest3') },
+                        { value: '4', label: t('guest4') },
+                        { value: '5', label: t('guest5') },
                       ]}
-                      value={formData.guestsCount?.toString() || '0'}
+                      value={formData.guestsCount?.toString() || '1'}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          guestsCount: parseInt(e.target.value) || 0,
+                          guestsCount: parseInt(e.target.value) || 1,
                         })
                       }
                       error={formErrors.guestsCount}
