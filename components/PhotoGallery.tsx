@@ -94,7 +94,7 @@ export function PhotoGallery() {
   };
 
   return (
-    <Section id="gallery">
+    <Section id="gallery" className="!pt-3 lg:!pt-5">
       <SectionHeading subtitle="">
         {t('ourMoments')}
       </SectionHeading>

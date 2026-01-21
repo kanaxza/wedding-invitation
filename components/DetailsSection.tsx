@@ -166,12 +166,12 @@ export function DetailsSection() {
   };
 
   return (
-    <Section id="details" background="gray">
+    <Section id="details" background="gray" className="!pb-3 lg:!pb-5">
       <SectionHeading subtitle={t('eventDetailsSubtitle')}>
         {t('eventDetails')}
       </SectionHeading>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
         {/* Date & Time Card */}
         <Card>
           <CardContent>
