@@ -10,38 +10,39 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const rsvps = await prisma.rSVP.findMany({
+    const invitations = await prisma.invitationCode.findMany({
       include: {
-        invitationCode: {
-          include: {
-            group: true,
-          },
-        },
+        group: true,
+        rsvp: true,
       },
       orderBy: {
-        updatedAt: 'desc',
+        createdAt: 'desc',
       },
     });
 
     // Generate CSV
     const headers = [
-      'Attending',
+      'Code',
       'Group Name',
       'Invitee Name',
+      'Status',
+      'RSVP Status',
       'Guests Count',
       'Food Preferences',
       'Allergic Food',
       'Updated At',
     ];
 
-    const rows = rsvps.map((r) => [
-      r.attending ? 'Yes' : 'No',
-      r.invitationCode.group.name,
-      r.invitationCode.inviteeName || '-',
-      r.guestsCount?.toString() || '-',
-      r.foodPreferences || '-',
-      r.allergicFood || '-',
-      r.updatedAt.toISOString(),
+    const rows = invitations.map((inv) => [
+      inv.code,
+      inv.group.name,
+      inv.inviteeName || '-',
+      inv.status,
+      inv.rsvp ? (inv.rsvp.attending ? 'Attending' : 'Not Attending') : 'No Response',
+      inv.rsvp?.guestsCount?.toString() || '-',
+      inv.rsvp?.foodPreferences || '-',
+      inv.rsvp?.allergicFood || '-',
+      inv.rsvp?.updatedAt.toISOString() || '-',
     ]);
 
     const csvContent = [
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse(csvContent, {
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="rsvp-export-${new Date().toISOString().split('T')[0]}.csv"`,
+        'Content-Disposition': `attachment; filename="invitations-export-${new Date().toISOString().split('T')[0]}.csv"`,
       },
     });
   } catch (error) {

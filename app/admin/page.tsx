@@ -99,6 +99,8 @@ export default function AdminPage() {
   const [rsvpsPageSize, setRsvpsPageSize] = useState(10);
   const [alertModal, setAlertModal] = useState<{ title: string; message: string; type: 'error' | 'success' | 'info'; onClose?: () => void } | null>(null);
   const [createInvitationModal, setCreateInvitationModal] = useState(false);
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const inviteeNameInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<{
@@ -199,6 +201,57 @@ export default function AdminPage() {
     } finally {
       setIsRefreshing(false);
     }
+  };
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortInvitations = (invitations: Invitation[]) => {
+    if (!sortColumn) return invitations;
+    
+    return [...invitations].sort((a, b) => {
+      let aVal: any;
+      let bVal: any;
+      
+      switch (sortColumn) {
+        case 'group':
+          aVal = a.group.name.toLowerCase();
+          bVal = b.group.name.toLowerCase();
+          break;
+        case 'inviteeName':
+          aVal = (a.inviteeName || '').toLowerCase();
+          bVal = (b.inviteeName || '').toLowerCase();
+          break;
+        case 'rsvpStatus':
+          aVal = a.rsvp ? (a.rsvp.attending ? 2 : 1) : 0;
+          bVal = b.rsvp ? (b.rsvp.attending ? 2 : 1) : 0;
+          break;
+        case 'foodPreferences':
+          aVal = (a.rsvp?.foodPreferences || '').toLowerCase();
+          bVal = (b.rsvp?.foodPreferences || '').toLowerCase();
+          break;
+        case 'allergicFood':
+          aVal = (a.rsvp?.allergicFood || '').toLowerCase();
+          bVal = (b.rsvp?.allergicFood || '').toLowerCase();
+          break;
+        case 'updated':
+          aVal = a.rsvp?.updatedAt ? new Date(a.rsvp.updatedAt).getTime() : 0;
+          bVal = b.rsvp?.updatedAt ? new Date(b.rsvp.updatedAt).getTime() : 0;
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
   };
 
   const loadInvitations = async (forceReload = false) => {
@@ -997,32 +1050,71 @@ export default function AdminPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       URL
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Group
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none min-w-[150px]" onClick={() => handleSort('inviteeName')}>
+                      <div className="flex items-center gap-1">
+                        Invitee Name
+                        {sortColumn === 'inviteeName' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Invitee Name
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none min-w-[150px]" onClick={() => handleSort('rsvpStatus')}>
+                      <div className="flex items-center gap-1">
+                        RSVP Status
+                        {sortColumn === 'rsvpStatus' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      RSVP Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Code
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none min-w-[120px]" onClick={() => handleSort('group')}>
+                      <div className="flex items-center gap-1">
+                        Group
+                        {sortColumn === 'group' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none min-w-[200px]" onClick={() => handleSort('foodPreferences')}>
+                      <div className="flex items-center gap-1">
+                        Food Preferences
+                        {sortColumn === 'foodPreferences' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none min-w-[150px]" onClick={() => handleSort('allergicFood')}>
+                      <div className="flex items-center gap-1">
+                        Allergic Food
+                        {sortColumn === 'allergicFood' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none min-w-[150px]" onClick={() => handleSort('updated')}>
+                      <div className="flex items-center gap-1">
+                        Updated
+                        {sortColumn === 'updated' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Code
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {invitations.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
                         No invitation codes yet
                       </td>
                     </tr>
                   ) : (
-                    invitations.filter(inv => {
+                    sortInvitations(invitations.filter(inv => {
                       const matchesGroup = filterGroup === 'all' || inv.group.name === filterGroup;
                       const matchesName = filterInviteeName === '' || (inv.inviteeName?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
                       const matchesRsvp = filterRsvpStatus === 'all' || 
@@ -1030,7 +1122,7 @@ export default function AdminPage() {
                         (filterRsvpStatus === 'not-attending' && inv.rsvp && !inv.rsvp.attending) ||
                         (filterRsvpStatus === 'no-response' && !inv.rsvp);
                       return matchesGroup && matchesName && matchesRsvp;
-                    })
+                    }))
                     .slice((invitationsPage - 1) * invitationsPageSize, invitationsPage * invitationsPageSize)
                     .map((invitation) => (
                       <tr key={invitation.id} className="hover:bg-gray-50">
@@ -1051,9 +1143,6 @@ export default function AdminPage() {
                               {copiedCode === `${invitation.code}-en` ? '✓' : '🇬🇧'}
                             </Button>
                           </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {invitation.group.name || '-'}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
                           {editingId === invitation.id ? (
@@ -1121,17 +1210,23 @@ export default function AdminPage() {
                             </div>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td className="px-6 py-4 text-sm text-gray-600">
                           {invitation.rsvp ? (
-                            <span className={invitation.rsvp.attending ? 'text-green-600' : 'text-red-600'}>
-                              {invitation.rsvp.attending ? 'Attending' : 'Not Attending'}
-                            </span>
+                            invitation.rsvp.attending ? (
+                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full w-fit bg-green-100 text-green-800">
+                                {invitation.rsvp.guestsCount ? `${invitation.rsvp.guestsCount} Guest${invitation.rsvp.guestsCount > 1 ? 's' : ''}` : 'Attending'}
+                              </span>
+                            ) : (
+                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full w-fit bg-red-100 text-red-800">
+                                Not Attending
+                              </span>
+                            )
                           ) : (
                             <span className="text-gray-400">No Response</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {invitation.code}
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {invitation.group.name || '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <div className="flex items-center gap-2">
@@ -1163,6 +1258,36 @@ export default function AdminPage() {
                             </button>
                           </div>
                         </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                          {invitation.rsvp?.foodPreferences ? (
+                            <div className="space-y-1">
+                              {invitation.rsvp.foodPreferences.split('|').map((pref, idx) => (
+                                <div key={idx} className="text-xs bg-amber-50 text-amber-800 px-2 py-1 rounded inline-block mr-1">
+                                  {pref.startsWith('Other:') ? pref : pref.replace(/([A-Z])/g, ' $1').trim()}
+                                </div>
+                              ))}
+                            </div>
+                          ) : '-'}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                          {invitation.rsvp?.allergicFood ? (
+                            <div className="text-xs bg-red-50 text-red-800 px-2 py-1 rounded">
+                              {invitation.rsvp.allergicFood}
+                            </div>
+                          ) : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {invitation.rsvp?.updatedAt ? new Date(invitation.rsvp.updatedAt).toLocaleString('en-GB', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          }) : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {invitation.code}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -1180,6 +1305,8 @@ export default function AdminPage() {
                   (filterRsvpStatus === 'no-response' && !inv.rsvp);
                 return matchesGroup && matchesName && matchesRsvp;
               });
+              const totalPages = Math.ceil(filteredInvitations.length / invitationsPageSize);
+              
               return filteredInvitations.length > 0 && (
                 <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -1224,149 +1351,6 @@ export default function AdminPage() {
                 </div>
               );
             })()}
-          </CardContent>
-        </Card>
-
-        {/* Actions */}
-        <div className="mb-6 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-900">RSVPs</h2>
-          <Button variant="outline" onClick={handleExport} disabled={isExporting}>
-            {isExporting ? <LoadingSpinner size="sm" /> : 'Export CSV'}
-          </Button>
-        </div>
-
-        {/* RSVP Table */}
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Attending
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Group
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Invitee Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Guests
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Food Preferences
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Allergic Food
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Updated
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {rsvps.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                        No RSVPs yet
-                      </td>
-                    </tr>
-                  ) : (
-                    rsvps
-                      .slice((rsvpsPage - 1) * rsvpsPageSize, rsvpsPage * rsvpsPageSize)
-                      .map((rsvp) => (
-                      <tr key={rsvp.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              rsvp.attending
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {rsvp.attending ? 'Yes' : 'No'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {rsvp.groupName || '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {rsvp.inviteeName || '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {rsvp.guestsCount || '-'}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">
-                          {rsvp.foodPreferences ? (
-                            <div className="space-y-1">
-                              {rsvp.foodPreferences.split('|').map((pref, idx) => (
-                                <div key={idx} className="text-xs bg-amber-50 text-amber-800 px-2 py-1 rounded inline-block mr-1">
-                                  {pref.startsWith('Other:') ? pref : pref.replace(/([A-Z])/g, ' $1').trim()}
-                                </div>
-                              ))}
-                            </div>
-                          ) : '-'}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">
-                          {rsvp.allergicFood ? (
-                            <div className="text-xs bg-red-50 text-red-800 px-2 py-1 rounded">
-                              {rsvp.allergicFood}
-                            </div>
-                          ) : '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {new Date(rsvp.updatedAt).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-            {rsvps.length > 0 && (
-              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="text-sm text-gray-700">
-                    Showing {((rsvpsPage - 1) * rsvpsPageSize) + 1} to {Math.min(rsvpsPage * rsvpsPageSize, rsvps.length)} of {rsvps.length} RSVPs
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-700">Show:</label>
-                    <select
-                      value={rsvpsPageSize}
-                      onChange={(e) => {
-                        setRsvpsPageSize(Number(e.target.value));
-                        setRsvpsPage(1);
-                      }}
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
-                    >
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setRsvpsPage(p => Math.max(1, p - 1))}
-                    disabled={rsvpsPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setRsvpsPage(p => Math.min(Math.ceil(rsvps.length / rsvpsPageSize), p + 1))}
-                    disabled={rsvpsPage >= Math.ceil(rsvps.length / rsvpsPageSize)}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
