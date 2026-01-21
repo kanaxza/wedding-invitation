@@ -6,15 +6,18 @@ import Image from 'next/image';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { LoadingSpinner } from './LoadingSpinner';
 
 export function HeroSection() {
   const { t, language } = useLanguage();
   const searchParams = useSearchParams();
   const [inviteeName, setInviteeName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const code = searchParams.get('code');
     if (code) {
+      setIsLoading(true);
       // Fetch invitee name
       fetch(`/api/invitations/verify?code=${code}`)
         .then(res => res.json())
@@ -25,6 +28,9 @@ export function HeroSection() {
         })
         .catch((err) => {
           console.error('Error fetching invitee:', err);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     }
   }, [searchParams]);
@@ -36,11 +42,21 @@ export function HeroSection() {
   };
 
   return (
-    <section
-      id="hero"
-      className="h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: '#FBF7F0' }}
-    >
+    <>
+      {/* Transparent Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 shadow-xl">
+            <LoadingSpinner />
+          </div>
+        </div>
+      )}
+      
+      <section
+        id="hero"
+        className="h-screen flex items-center justify-center px-4"
+        style={{ backgroundColor: '#FBF7F0' }}
+      >
       <div className="text-center max-w-4xl mx-auto w-full relative">
         {/* Wedding Logo */}
         <div className="flex justify-center mb-6">
@@ -127,5 +143,6 @@ export function HeroSection() {
       </div>
       
     </section>
+    </>
   );
 }
