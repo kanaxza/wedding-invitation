@@ -1,5 +1,5 @@
 import { Navigation } from '@/components/Navigation';
-import { HeroSection } from '@/components/HeroSection';
+import { HeroSectionWrapper } from '@/components/HeroSectionWrapper';
 import { DetailsSection } from '@/components/DetailsSection';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { RSVPSectionWrapper } from '@/components/RSVPSectionWrapper';
@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <Navigation />
-      <HeroSection />
+      <HeroSectionWrapper />
       <DetailsSection />
       <RSVPSectionWrapper />
       <PhotoGallery />
