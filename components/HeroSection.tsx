@@ -4,9 +4,30 @@ import { siteConfig } from '@/lib/siteConfig';
 import { Button } from './Button';
 import Image from 'next/image';
 import { useLanguage } from '@/lib/LanguageContext';
+import { useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export function HeroSection() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const searchParams = useSearchParams();
+  const [inviteeName, setInviteeName] = useState<string>('');
+
+  useEffect(() => {
+    const code = searchParams.get('code');
+    if (code) {
+      // Fetch invitee name
+      fetch(`/api/invitations/verify?code=${code}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.ok && data.inviteeName) {
+            setInviteeName(data.inviteeName);
+          }
+        })
+        .catch((err) => {
+          console.error('Error fetching invitee:', err);
+        });
+    }
+  }, [searchParams]);
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -33,9 +54,33 @@ export function HeroSection() {
           />
         </div>
         
-        <p className="text-sm uppercase tracking-widest mb-3" style={{ color: '#B18A3D' }}>
-          {t('invitedTo')}
-        </p>
+        <div className="h-6"></div>
+        
+        {inviteeName && language === 'th' && (
+          <div className="mb-5">
+            <p className="text-xl md:text-2xl" style={{ color: '#B18A3D' }}>
+              สวัสดี <span className="font-bold" style={{ fontSize: '120%' }}>{inviteeName}</span>,
+            </p>
+            <p className="text-xl md:text-2xl" style={{ color: '#B18A3D' }}>
+              บ่าวสาวขอเรียนเชิญร่วมงาน
+            </p>
+          </div>
+        )}
+        {inviteeName && language === 'en' && (
+          <div className="mb-5">
+            <p className="text-xl md:text-2xl" style={{ color: '#B18A3D' }}>
+              Hello <span className="font-bold" style={{ fontSize: '120%' }}>{inviteeName}</span>,
+            </p>
+            <p className="text-xl md:text-2xl" style={{ color: '#B18A3D' }}>
+              We would like to invite you to join our celebration
+            </p>
+          </div>
+        )}
+        {!inviteeName && (
+          <p className="text-sm uppercase tracking-widest mb-3" style={{ color: '#B18A3D' }}>
+            {t('invitedTo')}
+          </p>
+        )}
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif mb-3" style={{ color: '#B18A3D' }}>
           {t('weddingReception')}
         </h1>

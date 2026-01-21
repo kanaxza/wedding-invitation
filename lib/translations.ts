@@ -76,9 +76,9 @@ export const translations = {
     nonBeef: "Non-Beef",
     other: "Other",
     otherPlaceholder: "Please specify...",
-    allergicFood: "Allergic Food",
+    allergicFood: "Your special request (Allergic Food, Kid seat, etc.)",
     allergicFoodPlaceholder: "e.g., Peanuts, Seafood, Dairy...",
-    optional: "(Optional)",
+    optional: " ",
 
     // Contact Section
     contactUs: "Contact Us",
@@ -99,7 +99,7 @@ export const translations = {
     coupleName2: "แก่น",
     venue: "โรงแรมมิราเคิล แกรนด์",
     city: "กรุงเทพฯ",
-    respondHere: "กดตรงนี้",
+    respondHere: "กดตรงนี้เพื่อตอบ",
     seeMore: "ดูเพิ่มเติม...",
 
     // Event Details
@@ -168,9 +168,9 @@ export const translations = {
     nonBeef: "ไม่ทานเนื้อวัว",
     other: "อื่นๆ",
     otherPlaceholder: "โปรดระบุ...",
-    allergicFood: "อาหารที่แพ้",
+    allergicFood: "ความต้องการอื่นๆ (อาหารที่แพ้, ที่นั่งเด็ก, ฯลฯ)",
     allergicFoodPlaceholder: "เช่น ถั่ว, อาหารทะเล, นม...",
-    optional: "(ไม่จำเป็น)",
+    optional: " ",
 
     // Contact Section
     contactUs: "ติดต่อเรา",

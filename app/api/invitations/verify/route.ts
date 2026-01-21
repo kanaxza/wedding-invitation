@@ -2,6 +2,47 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { invitationCodeSchema } from '@/lib/validations';
 
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const code = searchParams.get('code');
+
+    if (!code) {
+      return NextResponse.json(
+        { ok: false, error: 'Code parameter is required' },
+        { status: 400 }
+      );
+    }
+
+    const invitation = await prisma.invitationCode.findUnique({
+      where: { code },
+      include: {
+        group: true,
+      },
+    });
+
+    if (!invitation) {
+      return NextResponse.json({
+        ok: false,
+        status: 'not_found',
+      });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      status: invitation.status,
+      inviteeName: invitation.inviteeName,
+      groupName: invitation.group.name,
+    });
+  } catch (error) {
+    console.error('Error verifying invitation code:', error);
+    return NextResponse.json(
+      { ok: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
