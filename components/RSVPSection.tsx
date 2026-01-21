@@ -235,7 +235,7 @@ export function RSVPSection() {
   };
 
   return (
-    <Section id="rsvp">
+    <Section id="rsvp" className="!pt-8 lg:!pt-12">
       <SectionHeading subtitle={t('rsvpSubtitle')}>
         {t('celebrateWithUs')}
       </SectionHeading>

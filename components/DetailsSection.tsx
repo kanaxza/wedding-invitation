@@ -264,14 +264,40 @@ export function DetailsSection() {
                 </svg>
               </div>
               <h3 className="font-semibold text-lg mb-2">{t('dressCode')}</h3>
-              {/* Pastel Metallic Colors: Blue, Pink, Rose Gold, Gold */}
-              <div className="flex justify-center gap-1 mb-3">
-                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #C5D8E8, #A8C5E0)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(165, 197, 224, 0.5), inset 2px 2px 4px rgba(255,255,255,0.3)' }} title="Pastel Metallic Blue"></div>
-                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #F5D1E0, #F0BBD3)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(240, 187, 211, 0.5), inset 2px 2px 4px rgba(255,255,255,0.3)' }} title="Pastel Metallic Pink"></div>
-                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #ECC5C0, #E6B8B3)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(230, 184, 179, 0.5), inset 2px 2px 4px rgba(255,255,255,0.4)' }} title="Pastel Metallic Rose Gold"></div>
-                <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: 'linear-gradient(145deg, #F5E6C8, #EED9B0)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(238, 217, 176, 0.5), inset 2px 2px 4px rgba(255,255,255,0.4)' }} title="Pastel Metallic Gold"></div>
+              {/* Dress Code Colors - All in one line */}
+              <div className="flex justify-center items-center gap-2 mb-3">
+                <div className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200" style={{ backgroundColor: '#04084F' }} title="Navy Blue"></div>
+                <Image 
+                  src="/dresscode/texture-2.jpg" 
+                  alt="Texture 2" 
+                  width={48} 
+                  height={48} 
+                  className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200 object-cover"
+                />
+                <Image 
+                  src="/dresscode/texture-1.jpg" 
+                  alt="Texture 1" 
+                  width={48} 
+                  height={48} 
+                  className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200 object-cover"
+                />
+                <div 
+                  className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-white" 
+                  style={{ 
+                    background: 'linear-gradient(145deg, #F5D1E0, #F0BBD3)', 
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(240, 187, 211, 0.5), inset 2px 2px 4px rgba(255,255,255,0.3)' 
+                  }} 
+                  title="Pastel Metallic Pink"
+                ></div>
+                <Image 
+                  src="/dresscode/texture-3.jpg" 
+                  alt="Texture 3" 
+                  width={48} 
+                  height={48} 
+                  className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200 object-cover"
+                />
               </div>
-              <p className="text-gray-600">{t('dressCodeDescription')}</p>
+              <p className="text-gray-600 text-sm">{t('dressCodeDescription')}</p>
             </div>
           </CardContent>
         </Card>
