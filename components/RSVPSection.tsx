@@ -47,7 +47,8 @@ export function RSVPSection() {
       // Trigger verification after setting the code
       verifyCodeFromUrl(urlCode.toUpperCase());
     }
-  }, [searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.get('code')]);
 
   const verifyCodeFromUrl = async (codeToVerify: string) => {
     setIsLoading(true);

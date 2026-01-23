@@ -61,6 +61,7 @@ export default function AdminPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [filterGroups, setFilterGroups] = useState<{id: string; name: string}[]>([]);
   const [isExporting, setIsExporting] = useState(false);
   const [newCode, setNewCode] = useState('');
   const [newInviteeName, setNewInviteeName] = useState('');
@@ -132,12 +133,10 @@ export default function AdminPage() {
     checkAuth();
   }, []);
 
-  // Load groups and invitations data after authentication
+  // Auto-load minimal groups data for filter dropdown only
   useEffect(() => {
     if (isAuthenticated) {
-      // Start loading invitations and groups in background
-      loadInvitations();
-      loadGroups();
+      loadFilterGroups();
     }
   }, [isAuthenticated]);
 
@@ -278,8 +277,19 @@ export default function AdminPage() {
     });
   };
 
-  const loadInvitations = async (forceReload = false) => {
-    if (invitationsLoaded && !forceReload) return;
+  const loadFilterGroups = async () => {
+    try {
+      const groupsRes = await fetch('/api/admin/groups?minimal=true', { credentials: 'include' });
+      if (groupsRes.ok) {
+        const data = await groupsRes.json();
+        setFilterGroups(data.groups);
+      }
+    } catch (error) {
+      console.error('Failed to load filter groups:', error);
+    }
+  };
+
+  const loadInvitations = async () => {
     setIsLoadingInvitations(true);
     try {
       const invitationsRes = await fetch('/api/admin/invitations', { credentials: 'include' });
@@ -296,7 +306,6 @@ export default function AdminPage() {
   };
 
   const loadGroups = async () => {
-    if (groupsLoaded) return;
     setIsLoadingGroups(true);
     try {
       const groupsRes = await fetch('/api/admin/groups', { credentials: 'include' });
@@ -569,6 +578,7 @@ export default function AdminPage() {
         setNewGroupDescription('');
         setNewGroupId(data.group.id);
         await loadData();
+        await loadFilterGroups(); // Refresh filter dropdown
       } else {
         showAlert(data.error || 'Failed to create group');
       }
@@ -604,6 +614,7 @@ export default function AdminPage() {
         setEditGroupIdInput('');
         setEditGroupDescriptionInput('');
         await loadData();
+        await loadFilterGroups(); // Refresh filter dropdown
       } else {
         showAlert(data.error || 'Failed to update group');
       }
@@ -631,6 +642,7 @@ export default function AdminPage() {
 
       if (response.ok) {
         await loadData();
+        await loadFilterGroups(); // Refresh filter dropdown
       } else {
         showAlert(data.error || 'Failed to delete group');
       }
@@ -898,17 +910,17 @@ export default function AdminPage() {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
             <button
-              onClick={loadData}
+              onClick={loadSummaryData}
               disabled={isRefreshing}
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Refresh data"
+              title="Refresh summary"
             >
               <svg className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </button>
             {isRefreshing && (
-              <span className="text-sm text-gray-500 animate-pulse">Refreshing...</span>
+              <span className="text-sm text-gray-500 animate-pulse">Refreshing summary...</span>
             )}
           </div>
           <div className="flex gap-3">
@@ -991,6 +1003,13 @@ export default function AdminPage() {
               <CardTitle>Invitation List ({filteredInvitationsCount})</CardTitle>
               <div className="flex gap-2">
                 <Button
+                  variant="outline"
+                  onClick={loadInvitations}
+                  disabled={isLoadingInvitations}
+                >
+                  {isLoadingInvitations ? <LoadingSpinner size="sm" /> : 'Get Data'}
+                </Button>
+                <Button
                   onClick={() => setCreateInvitationModal(true)}
                   className="bg-gradient-to-br from-[#C99A4D] via-[#A67C38] to-[#8B6B29] text-white hover:from-[#D4A857] hover:via-[#B18A3D] hover:to-[#9A7330]"
                 >
@@ -1019,7 +1038,7 @@ export default function AdminPage() {
                     className="w-full h-[42px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
                   >
                     <option value="all">All Groups</option>
-                    {groups.map((group) => (
+                    {filterGroups.map((group) => (
                       <option key={group.id} value={group.name}>
                         {group.name}
                       </option>
@@ -1054,7 +1073,13 @@ export default function AdminPage() {
               </div>
             </div>
             <div className="overflow-x-auto">
-              {isLoadingInvitations ? (
+              {!invitationsLoaded && !isLoadingInvitations ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-center">
+                    <p className="text-gray-500 mb-2">Click "Get Data" to load invitations</p>
+                  </div>
+                </div>
+              ) : isLoadingInvitations ? (
                 <div className="flex justify-center items-center py-12">
                   <LoadingSpinner />
                 </div>
@@ -1175,7 +1200,7 @@ export default function AdminPage() {
                                 className="px-2 py-1 border rounded"
                               >
                                 <option value="">Select a group...</option>
-                                {groups.map((group) => (
+                                {filterGroups.map((group) => (
                                   <option key={group.id} value={group.id}>
                                     {group.name}
                                   </option>
@@ -1371,7 +1396,17 @@ export default function AdminPage() {
 
         {/* Manage Groups */}
         <div className="mt-12">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Manage Groups</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Manage Groups</h2>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={loadGroups}
+              disabled={isLoadingGroups}
+            >
+              {isLoadingGroups ? <LoadingSpinner size="sm" /> : 'Get Data'}
+            </Button>
+          </div>
           <Card className="mb-8">
             <CardContent>
               <form onSubmit={handleCreateGroup} className="mb-4">
@@ -1392,7 +1427,13 @@ export default function AdminPage() {
                 </Button>
               </div>
             </form>
-            {isLoadingGroups ? (
+            {!groupsLoaded && !isLoadingGroups ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="text-center">
+                  <p className="text-gray-500 mb-2">Click "Get Data" to load groups</p>
+                </div>
+              </div>
+            ) : isLoadingGroups ? (
               <div className="flex justify-center items-center py-12">
                 <LoadingSpinner />
               </div>
@@ -1720,7 +1761,7 @@ export default function AdminPage() {
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
           onClick={() => {
             setCreateInvitationModal(false);
-            loadInvitations(true);
+            loadInvitations();
           }}
         >
           <div 
@@ -1734,7 +1775,7 @@ export default function AdminPage() {
               <button
                 onClick={() => {
                   setCreateInvitationModal(false);
-                  loadInvitations(true);
+                  loadInvitations();
                 }}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
@@ -1862,7 +1903,7 @@ export default function AdminPage() {
                         className="w-full h-[42px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B18A3D] focus:border-transparent"
                       >
                         <option value="">Select a group...</option>
-                        {groups.map((group) => (
+                        {filterGroups.map((group) => (
                           <option key={group.id} value={group.id}>
                             {group.name}
                           </option>

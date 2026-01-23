@@ -33,7 +33,8 @@ export function HeroSection() {
           setIsLoading(false);
         });
     }
-  }, [searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.get('code')]);
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {

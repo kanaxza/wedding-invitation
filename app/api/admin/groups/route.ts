@@ -10,6 +10,23 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Check if minimal query parameter is set for dropdown filters
+    const { searchParams } = new URL(request.url);
+    const minimal = searchParams.get('minimal') === 'true';
+
+    if (minimal) {
+      // Only fetch id and name for dropdown filters
+      const groups = await prisma.group.findMany({
+        select: {
+          id: true,
+          name: true,
+        },
+        orderBy: { name: 'asc' },
+      });
+      return NextResponse.json({ groups });
+    }
+
+    // Full groups data for the groups table
     const groups = await prisma.group.findMany({
       orderBy: { name: 'asc' },
     });
