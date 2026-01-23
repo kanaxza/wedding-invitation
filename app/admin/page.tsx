@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
@@ -10,16 +10,12 @@ import { siteConfig } from '@/lib/siteConfig';
 
 interface RSVP {
   id: string;
-  code: string;
-  name: string;
   phone: string;
   attending: boolean;
   guestsCount: number | null;
   foodPreferences: string | null;
   allergicFood: string | null;
   updatedAt: string;
-  groupName?: string;
-  inviteeName?: string;
 }
 
 interface Summary {
@@ -27,6 +23,7 @@ interface Summary {
   attending: number;
   notAttending: number;
   totalGuests: number;
+  totalInvitations?: number; // Optional for backward compatibility
 }
 
 interface Invitation {
@@ -62,7 +59,6 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [summary, setSummary] = useState<Summary | null>(null);
-  const [rsvps, setRsvps] = useState<RSVP[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [isExporting, setIsExporting] = useState(false);
@@ -93,10 +89,8 @@ export default function AdminPage() {
   const [filterRsvpStatus, setFilterRsvpStatus] = useState<string>('all');
   const [groupsPage, setGroupsPage] = useState(1);
   const [invitationsPage, setInvitationsPage] = useState(1);
-  const [rsvpsPage, setRsvpsPage] = useState(1);
   const [groupsPageSize, setGroupsPageSize] = useState(10);
   const [invitationsPageSize, setInvitationsPageSize] = useState(10);
-  const [rsvpsPageSize, setRsvpsPageSize] = useState(10);
   const [alertModal, setAlertModal] = useState<{ title: string; message: string; type: 'error' | 'success' | 'info'; onClose?: () => void } | null>(null);
   const [createInvitationModal, setCreateInvitationModal] = useState(false);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -191,7 +185,6 @@ export default function AdminPage() {
       if (summaryRes.ok) {
         const data = await summaryRes.json();
         setSummary(data.summary);
-        setRsvps(data.rsvps);
       } else {
         console.error('Summary fetch failed:', summaryRes.status);
         setIsAuthenticated(false);
@@ -202,6 +195,37 @@ export default function AdminPage() {
       setIsRefreshing(false);
     }
   };
+
+  // Memoize filtered invitations count to avoid recalculating on every render
+  const filteredInvitationsCount = useMemo(() => {
+    return invitations.filter(inv => {
+      const matchesGroup = filterGroup === 'all' || inv.group.name === filterGroup;
+      const matchesName = filterInviteeName === '' || (inv.inviteeName?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
+      const matchesRsvp = filterRsvpStatus === 'all' || 
+        (filterRsvpStatus === 'attending' && inv.rsvp?.attending) ||
+        (filterRsvpStatus === 'not-attending' && inv.rsvp && !inv.rsvp.attending) ||
+        (filterRsvpStatus === 'no-response' && !inv.rsvp);
+      return matchesGroup && matchesName && matchesRsvp;
+    }).length;
+  }, [invitations, filterGroup, filterInviteeName, filterRsvpStatus]);
+
+  // Memoize total invitations count - use API-provided count if available, fallback to client-side count
+  const totalInvitationsCount = useMemo(() => 
+    summary?.totalInvitations ?? invitations.length, 
+    [summary?.totalInvitations, invitations.length]
+  );
+
+  // Memoize stats percentages to avoid recalculation on every render
+  const statsPercentages = useMemo(() => {
+    if (!summary || totalInvitationsCount === 0) return { responses: 0, attending: 0, notAttending: 0, totalGuests: 0 };
+    
+    return {
+      responses: Math.round((summary.totalResponses / totalInvitationsCount) * 100),
+      attending: Math.round((summary.attending / totalInvitationsCount) * 100),
+      notAttending: Math.round((summary.notAttending / totalInvitationsCount) * 100),
+      totalGuests: Math.round((summary.totalGuests / siteConfig.event.maxGuests) * 100)
+    };
+  }, [summary, totalInvitationsCount]);
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
@@ -300,7 +324,6 @@ export default function AdminPage() {
       if (summaryRes.ok) {
         const data = await summaryRes.json();
         setSummary(data.summary);
-        setRsvps(data.rsvps);
       } else {
         console.error('Summary fetch failed:', summaryRes.status);
         setIsAuthenticated(false);
@@ -911,10 +934,10 @@ export default function AdminPage() {
                 <div className="text-center">
                   <p className="text-sm text-gray-600 mb-1">Responses / Invitees</p>
                   <p className="text-3xl font-bold text-gray-900">
-                    {summary.totalResponses} / {invitations.length}
+                    {summary.totalResponses} / {totalInvitationsCount}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {invitations.length > 0 ? Math.round((summary.totalResponses / invitations.length) * 100) : 0}%
+                    {statsPercentages.responses}%
                   </p>
                 </div>
               </CardContent>
@@ -927,7 +950,7 @@ export default function AdminPage() {
                     {summary.attending}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {invitations.length > 0 ? Math.round((summary.attending / invitations.length) * 100) : 0}%
+                    {statsPercentages.attending}%
                   </p>
                 </div>
               </CardContent>
@@ -940,7 +963,7 @@ export default function AdminPage() {
                     {summary.totalGuests} / {siteConfig.event.maxGuests}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {Math.round((summary.totalGuests / siteConfig.event.maxGuests) * 100)}%
+                    {statsPercentages.totalGuests}%
                   </p>
                 </div>
               </CardContent>
@@ -953,7 +976,7 @@ export default function AdminPage() {
                     {summary.notAttending}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {invitations.length > 0 ? Math.round((summary.notAttending / invitations.length) * 100) : 0}%
+                    {statsPercentages.notAttending}%
                   </p>
                 </div>
               </CardContent>
@@ -965,15 +988,7 @@ export default function AdminPage() {
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Invitation List ({invitations.filter(inv => {
-                const matchesGroup = filterGroup === 'all' || inv.group.name === filterGroup;
-                const matchesName = filterInviteeName === '' || (inv.inviteeName?.toLowerCase().includes(filterInviteeName.toLowerCase()) ?? false);
-                const matchesRsvp = filterRsvpStatus === 'all' || 
-                  (filterRsvpStatus === 'attending' && inv.rsvp?.attending) ||
-                  (filterRsvpStatus === 'not-attending' && inv.rsvp && !inv.rsvp.attending) ||
-                  (filterRsvpStatus === 'no-response' && !inv.rsvp);
-                return matchesGroup && matchesName && matchesRsvp;
-              }).length})</CardTitle>
+              <CardTitle>Invitation List ({filteredInvitationsCount})</CardTitle>
               <div className="flex gap-2">
                 <Button
                   onClick={() => setCreateInvitationModal(true)}

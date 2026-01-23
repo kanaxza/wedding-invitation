@@ -12,19 +12,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Get all RSVPs with invitation code and group
+    // Get all RSVPs for stats calculation
     const rsvps = await prisma.rSVP.findMany({
-      include: {
-        invitationCode: {
-          include: {
-            group: true,
-          },
-        },
-      },
-      orderBy: {
-        updatedAt: 'desc',
+      select: {
+        attending: true,
+        guestsCount: true,
       },
     });
+
+    // Get total invitation count efficiently
+    const totalInvitations = await prisma.invitationCode.count();
 
     // Calculate summary stats
     const attending = rsvps.filter((r) => r.attending);
@@ -37,20 +34,8 @@ export async function GET(request: NextRequest) {
         attending: attending.length,
         notAttending: notAttending.length,
         totalGuests,
+        totalInvitations, // Include total invitations count
       },
-      rsvps: rsvps.map((r) => ({
-        id: r.id,
-        code: r.invitationCode.code,
-        phone: r.phone,
-        attending: r.attending,
-        guestsCount: r.guestsCount,
-        foodPreferences: r.foodPreferences,
-        allergicFood: r.allergicFood,
-        updatedAt: r.updatedAt,
-        createdAt: r.createdAt,
-        groupName: r.invitationCode.group.name,
-        inviteeName: r.invitationCode.inviteeName,
-      })),
     });
   } catch (error) {
     console.error('Error fetching admin summary:', error);
