@@ -13,6 +13,7 @@ export function DetailsSection() {
   const [showQR, setShowQR] = useState(false);
   const [showCalendarOptions, setShowCalendarOptions] = useState(false);
   const [showOpenInBrowser, setShowOpenInBrowser] = useState(false);
+  const [selectedColor, setSelectedColor] = useState<string>('');
   
   const isWebView = () => {
     if (typeof window === 'undefined') return false;
@@ -264,40 +265,111 @@ export function DetailsSection() {
                 </svg>
               </div>
               <h3 className="font-semibold text-lg mb-2">{t('dressCode')}</h3>
+              <p className="text-xs text-gray-500 italic mb-2">{t('clickColorToSee')}</p>
               {/* Dress Code Colors - All in one line */}
               <div className="flex justify-center items-center gap-2 mb-3">
-                <div className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200" style={{ backgroundColor: '#04084F' }} title="Navy Blue"></div>
-                <Image 
-                  src="/dresscode/texture-2.jpg" 
-                  alt="Texture 2" 
-                  width={48} 
-                  height={48} 
-                  className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200 object-cover"
+                <button
+                  onClick={() => {
+                    const color = t('colorNavyBlue');
+                    console.log('Navy Blue clicked:', color);
+                    setSelectedColor(color);
+                  }}
+                  className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200 hover:scale-110 transition-transform cursor-pointer" 
+                  style={{ backgroundColor: '#04084F' }} 
+                  title="Navy Blue"
+                  aria-label="Navy Blue"
                 />
-                <Image 
-                  src="/dresscode/texture-1.jpg" 
-                  alt="Texture 1" 
-                  width={48} 
-                  height={48} 
-                  className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200 object-cover"
-                />
-                <div 
-                  className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-white" 
+                <button
+                  onClick={() => {
+                    const color = t('colorSilverGray');
+                    console.log('Silver/Gray clicked:', color);
+                    setSelectedColor(color);
+                  }}
+                  className="hover:scale-110 transition-transform cursor-pointer"
+                  aria-label="Silver/Gray"
+                >
+                  <Image 
+                    src="/dresscode/texture-2.jpg" 
+                    alt="Texture 2" 
+                    width={48} 
+                    height={48} 
+                    className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200 object-cover"
+                  />
+                </button>
+                <button
+                  onClick={() => {
+                    const color = t('colorGold');
+                    console.log('Gold clicked:', color);
+                    setSelectedColor(color);
+                  }}
+                  className="hover:scale-110 transition-transform cursor-pointer"
+                  aria-label="Gold"
+                >
+                  <Image 
+                    src="/dresscode/texture-1.jpg" 
+                    alt="Texture 1" 
+                    width={48} 
+                    height={48} 
+                    className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200 object-cover"
+                  />
+                </button>
+                <button
+                  onClick={() => {
+                    const color = t('colorPastelPink');
+                    console.log('Pastel Pink clicked:', color);
+                    setSelectedColor(color);
+                  }}
+                  className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-white hover:scale-110 transition-transform cursor-pointer" 
                   style={{ 
                     background: 'linear-gradient(145deg, #F5D1E0, #F0BBD3)', 
                     boxShadow: '0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 4px rgba(240, 187, 211, 0.5), inset 2px 2px 4px rgba(255,255,255,0.3)' 
                   }} 
                   title="Pastel Metallic Pink"
-                ></div>
+                  aria-label="Pastel Pink"
+                />
+                <button
+                  onClick={() => {
+                    const color = t('colorBronze');
+                    console.log('Bronze clicked:', color);
+                    setSelectedColor(color);
+                  }}
+                  className="hover:scale-110 transition-transform cursor-pointer"
+                  aria-label="Bronze"
+                >
+                  <Image 
+                    src="/dresscode/texture-3.jpg" 
+                    alt="Texture 3" 
+                    width={48} 
+                    height={48} 
+                    className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200 object-cover"
+                  />
+                </button>
+              </div>
+              {selectedColor && (
+                <p className="text-sm font-medium mb-2" style={{ color: '#A67C38' }}>
+                  {selectedColor}
+                </p>
+              )}
+              <p className="text-gray-600 text-sm">{t('dressCodeDescription')}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Dining Style Card */}
+        <Card>
+          <CardContent>
+            <div className="text-center">
+              <div className="mb-3 flex justify-center" style={{ color: '#A67C38' }}>
                 <Image 
-                  src="/dresscode/texture-3.jpg" 
-                  alt="Texture 3" 
-                  width={48} 
-                  height={48} 
-                  className="w-12 h-12 flex-shrink-0 rounded-full shadow-lg border-2 border-gray-200 object-cover"
+                  src="/dining-icon.png" 
+                  alt="Chinese Banquet Table" 
+                  width={60} 
+                  height={60}
+                  className="w-14 h-14"
                 />
               </div>
-              <p className="text-gray-600 text-sm">{t('dressCodeDescription')}</p>
+              <h3 className="font-semibold text-lg mb-2">{t('diningStyle')}</h3>
+              <p className="text-gray-600 text-sm">{t('diningStyleDescription')}</p>
             </div>
           </CardContent>
         </Card>
