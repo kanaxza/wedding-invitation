@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, description } = body;
+    const { name, description, tableLabel } = body;
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json(
@@ -59,22 +59,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if group already exists
-    const existing = await prisma.group.findUnique({
-      where: { name: name.trim() },
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        { error: 'This group name already exists' },
-        { status: 400 }
-      );
-    }
-
     const group = await prisma.group.create({
       data: {
         name: name.trim(),
         description: description?.trim() || null,
+        tableLabel: tableLabel?.trim() || null,
       },
     });
 
@@ -100,7 +89,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, name, description } = body;
+    const { id, name, description, tableLabel } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -116,26 +105,12 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Check if new name already exists
-    const existing = await prisma.group.findFirst({
-      where: { 
-        name: name.trim(),
-        NOT: { id }
-      },
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        { error: 'This group name already exists' },
-        { status: 400 }
-      );
-    }
-
     const group = await prisma.group.update({
       where: { id },
-      data: { 
+      data: {
         name: name.trim(),
         description: description?.trim() || null,
+        tableLabel: tableLabel?.trim() || null,
       },
     });
 

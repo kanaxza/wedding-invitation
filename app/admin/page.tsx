@@ -44,6 +44,7 @@ interface Group {
   id: string;
   name: string;
   description: string | null;
+  tableLabel: string | null;
   createdAt: string;
 }
 
@@ -82,9 +83,15 @@ export default function AdminPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [newGroupInput, setNewGroupInput] = useState('');
   const [newGroupDescription, setNewGroupDescription] = useState('');
+  const [newGroupTableLabel, setNewGroupTableLabel] = useState('');
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [editGroupNameInput, setEditGroupIdInput] = useState('');
   const [editGroupDescriptionInput, setEditGroupDescriptionInput] = useState('');
+  const [editGroupTableLabelInput, setEditGroupTableLabelInput] = useState('');
+  const [moveGuestsModal, setMoveGuestsModal] = useState(false);
+  const [moveFromGroupId, setMoveFromGroupId] = useState('');
+  const [moveToGroupId, setMoveToGroupId] = useState('');
+  const [isMovingGuests, setIsMovingGuests] = useState(false);
   const [filterGroup, setFilterGroup] = useState<string>('all');
   const [filterInviteeName, setFilterInviteeName] = useState<string>('');
   const [filterRsvpStatus, setFilterRsvpStatus] = useState<string>('all');
@@ -565,9 +572,10 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           name: newGroupInput.trim(),
           description: newGroupDescription.trim() || undefined,
+          tableLabel: newGroupTableLabel.trim() || undefined,
         }),
       });
 
@@ -576,6 +584,7 @@ export default function AdminPage() {
       if (response.ok) {
         setNewGroupInput('');
         setNewGroupDescription('');
+        setNewGroupTableLabel('');
         setNewGroupId(data.group.id);
         await loadData();
         await loadFilterGroups(); // Refresh filter dropdown
@@ -600,10 +609,11 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/groups', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          id, 
+        body: JSON.stringify({
+          id,
           name: editGroupNameInput.trim(),
           description: editGroupDescriptionInput.trim() || undefined,
+          tableLabel: editGroupTableLabelInput.trim() || undefined,
         }),
       });
 
@@ -613,6 +623,7 @@ export default function AdminPage() {
         setEditingGroupId(null);
         setEditGroupIdInput('');
         setEditGroupDescriptionInput('');
+        setEditGroupTableLabelInput('');
         await loadData();
         await loadFilterGroups(); // Refresh filter dropdown
       } else {
@@ -622,6 +633,37 @@ export default function AdminPage() {
       showAlert('An error occurred. Please try again.');
     } finally {
       setIsUpdatingGroup(false);
+    }
+  };
+
+  const handleMoveGuests = async () => {
+    if (!moveFromGroupId || !moveToGroupId) return;
+
+    setIsMovingGuests(true);
+    try {
+      const response = await fetch('/api/admin/groups/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ fromGroupId: moveFromGroupId, toGroupId: moveToGroupId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMoveGuestsModal(false);
+        setMoveFromGroupId('');
+        setMoveToGroupId('');
+        await loadData();
+        await loadFilterGroups();
+        showAlert(`Successfully moved ${data.movedCount} guest(s) to the new group.`, 'success');
+      } else {
+        showAlert(data.error || 'Failed to move guests');
+      }
+    } catch (error) {
+      showAlert('An error occurred. Please try again.');
+    } finally {
+      setIsMovingGuests(false);
     }
   };
 
@@ -1398,19 +1440,28 @@ export default function AdminPage() {
         <div className="mt-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Manage Groups</h2>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={loadGroups}
-              disabled={isLoadingGroups}
-            >
-              {isLoadingGroups ? <LoadingSpinner size="sm" /> : 'Get Data'}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setMoveGuestsModal(true)}
+              >
+                Move Guests
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={loadGroups}
+                disabled={isLoadingGroups}
+              >
+                {isLoadingGroups ? <LoadingSpinner size="sm" /> : 'Get Data'}
+              </Button>
+            </div>
           </div>
           <Card className="mb-8">
             <CardContent>
               <form onSubmit={handleCreateGroup} className="mb-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
                   <Input
                     placeholder="Group name..."
                     value={newGroupInput}
@@ -1421,12 +1472,17 @@ export default function AdminPage() {
                     placeholder="Description (optional)..."
                     value={newGroupDescription}
                     onChange={(e) => setNewGroupDescription(e.target.value)}
-                />
-                <Button type="submit" className="h-[42px]" disabled={isCreatingGroup}>
-                  {isCreatingGroup ? <LoadingSpinner size="sm" /> : 'Add'}
-                </Button>
-              </div>
-            </form>
+                  />
+                  <Input
+                    placeholder="Table label (optional)..."
+                    value={newGroupTableLabel}
+                    onChange={(e) => setNewGroupTableLabel(e.target.value)}
+                  />
+                  <Button type="submit" className="h-[42px]" disabled={isCreatingGroup}>
+                    {isCreatingGroup ? <LoadingSpinner size="sm" /> : 'Add'}
+                  </Button>
+                </div>
+              </form>
             {!groupsLoaded && !isLoadingGroups ? (
               <div className="flex justify-center items-center py-12">
                 <div className="text-center">
@@ -1449,6 +1505,9 @@ export default function AdminPage() {
                       Description
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Table Label
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Created
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1459,7 +1518,7 @@ export default function AdminPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {groups.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                         No groups yet. Add your first group above.
                       </td>
                     </tr>
@@ -1494,6 +1553,19 @@ export default function AdminPage() {
                             <span>{group.description || '-'}</span>
                           )}
                         </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {editingGroupId === group.id ? (
+                            <input
+                              type="text"
+                              value={editGroupTableLabelInput}
+                              onChange={(e) => setEditGroupTableLabelInput(e.target.value)}
+                              placeholder="Table label (optional)"
+                              className="px-2 py-1 border rounded w-full"
+                            />
+                          ) : (
+                            <span>{group.tableLabel || '-'}</span>
+                          )}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(group.createdAt).toLocaleDateString()}
                         </td>
@@ -1519,6 +1591,7 @@ export default function AdminPage() {
                                   setEditingGroupId(null);
                                   setEditGroupIdInput('');
                                   setEditGroupDescriptionInput('');
+                                  setEditGroupTableLabelInput('');
                                 }}
                                 disabled={isUpdatingGroup}
                                 className="text-gray-600 hover:text-gray-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1533,6 +1606,7 @@ export default function AdminPage() {
                                   setEditingGroupId(group.id);
                                   setEditGroupIdInput(group.name);
                                   setEditGroupDescriptionInput(group.description || '');
+                                  setEditGroupTableLabelInput(group.tableLabel || '');
                                 }}
                                 className="text-blue-600 hover:text-blue-800 font-medium"
                               >
@@ -1645,6 +1719,70 @@ export default function AdminPage() {
                 disabled={isDeleting}
               >
                 {isDeleting ? <LoadingSpinner size="sm" /> : 'Delete'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Move Guests Modal */}
+      {moveGuestsModal && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => { if (!isMovingGuests) setMoveGuestsModal(false); }}
+        >
+          <div
+            className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Move Guests Between Groups</h3>
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">From Group</label>
+                <select
+                  value={moveFromGroupId}
+                  onChange={(e) => setMoveFromGroupId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isMovingGuests}
+                >
+                  <option value="">Select source group...</option>
+                  {filterGroups.map((g) => (
+                    <option key={g.id} value={g.id}>{g.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">To Group</label>
+                <select
+                  value={moveToGroupId}
+                  onChange={(e) => setMoveToGroupId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isMovingGuests}
+                >
+                  <option value="">Select destination group...</option>
+                  {filterGroups
+                    .filter((g) => g.id !== moveFromGroupId)
+                    .map((g) => (
+                      <option key={g.id} value={g.id}>{g.name}</option>
+                    ))}
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => { setMoveGuestsModal(false); setMoveFromGroupId(''); setMoveToGroupId(''); }}
+                disabled={isMovingGuests}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleMoveGuests}
+                disabled={isMovingGuests || !moveFromGroupId || !moveToGroupId}
+              >
+                {isMovingGuests ? <LoadingSpinner size="sm" /> : 'Move All Guests'}
               </Button>
             </div>
           </div>

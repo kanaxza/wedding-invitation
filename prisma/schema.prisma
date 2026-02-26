@@ -12,8 +12,9 @@ datasource db {
 
 model Group {
   id              String           @id @default(cuid())
-  name            String           @unique
+  name            String
   description     String?
+  tableLabel      String?
   createdAt       DateTime         @default(now())
   invitationCodes InvitationCode[]
 }
