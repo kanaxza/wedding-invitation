@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       status: invitation.status,
       inviteeName: invitation.inviteeName,
       groupName: invitation.group.name,
+      tableLabel: invitation.group.tableLabel,
     });
   } catch (error) {
     console.error('Error verifying invitation code:', error);
@@ -76,6 +77,7 @@ export async function POST(request: NextRequest) {
       status: invitation.status,
       inviteeName: invitation.inviteeName,
       groupName: invitation.group.name,
+      tableLabel: invitation.group.tableLabel,
     });
   } catch (error) {
     console.error('Error verifying invitation code:', error);

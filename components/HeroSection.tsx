@@ -12,18 +12,27 @@ export function HeroSection() {
   const { t, language } = useLanguage();
   const searchParams = useSearchParams();
   const [inviteeName, setInviteeName] = useState<string>('');
+  const [groupName, setGroupName] = useState<string>('');
+  const [tableLabel, setTableLabel] = useState<string>('');
+  const [isAttending, setIsAttending] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const code = searchParams.get('code');
     if (code) {
       setIsLoading(true);
-      // Fetch invitee name
-      fetch(`/api/invitations/verify?code=${code}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.ok && data.inviteeName) {
-            setInviteeName(data.inviteeName);
+      Promise.all([
+        fetch(`/api/invitations/verify?code=${code}`).then(r => r.json()),
+        fetch(`/api/rsvp?code=${code}`).then(r => r.json()),
+      ])
+        .then(([inviteData, rsvpData]) => {
+          if (inviteData.ok && inviteData.inviteeName) {
+            setInviteeName(inviteData.inviteeName);
+            setGroupName(inviteData.groupName || '');
+            setTableLabel(inviteData.tableLabel || '');
+          }
+          if (rsvpData.rsvp && rsvpData.rsvp.attending === true) {
+            setIsAttending(true);
           }
         })
         .catch((err) => {
@@ -78,7 +87,16 @@ export function HeroSection() {
             <p className="text-xl md:text-2xl" style={{ color: '#B18A3D' }}>
               สวัสดี <span className="font-bold" style={{ fontSize: '120%' }}>{inviteeName}</span>,
             </p>
-            <p className="text-xl md:text-2xl" style={{ color: '#B18A3D' }}>
+            {groupName && (
+              <p className="text-lg md:text-xl font-semibold" style={{ color: '#B18A3D' }}>({groupName})</p>
+            )}
+            {isAttending && tableLabel && (
+              <div className="inline-flex flex-col items-center mt-2 px-6 py-3 rounded-xl" style={{ backgroundColor: '#F9F3E8', border: '2px solid #B18A3D' }}>
+                <p className="text-xs font-medium uppercase tracking-widest mb-1" style={{ color: '#8B6B29' }}>{t('yourTable')}</p>
+                <p className="text-3xl font-bold" style={{ color: '#B18A3D' }}>{tableLabel}</p>
+              </div>
+            )}
+            <p className="text-xl md:text-2xl mt-2" style={{ color: '#B18A3D' }}>
               บ่าวสาวขอเรียนเชิญร่วมงาน
             </p>
           </div>
@@ -88,7 +106,16 @@ export function HeroSection() {
             <p className="text-xl md:text-2xl" style={{ color: '#B18A3D' }}>
               Hello <span className="font-bold" style={{ fontSize: '120%' }}>{inviteeName}</span>,
             </p>
-            <p className="text-xl md:text-2xl" style={{ color: '#B18A3D' }}>
+            {groupName && (
+              <p className="text-lg md:text-xl font-semibold" style={{ color: '#B18A3D' }}>({groupName})</p>
+            )}
+            {isAttending && tableLabel && (
+              <div className="inline-flex flex-col items-center mt-2 px-6 py-3 rounded-xl" style={{ backgroundColor: '#F9F3E8', border: '2px solid #B18A3D' }}>
+                <p className="text-xs font-medium uppercase tracking-widest mb-1" style={{ color: '#8B6B29' }}>{t('yourTable')}</p>
+                <p className="text-3xl font-bold" style={{ color: '#B18A3D' }}>{tableLabel}</p>
+              </div>
+            )}
+            <p className="text-xl md:text-2xl mt-2" style={{ color: '#B18A3D' }}>
               We would like to invite you to join our celebration
             </p>
           </div>
