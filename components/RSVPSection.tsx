@@ -27,6 +27,9 @@ export function RSVPSection() {
   const [code, setCode] = useState('');
   const [inviteeName, setInviteeName] = useState('');
   const [groupName, setGroupName] = useState('');
+  const [tableLabel, setTableLabel] = useState<string | null>(null);
+  const [showTablePopup, setShowTablePopup] = useState(false);
+  const [autoVerifyDone, setAutoVerifyDone] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<RSVPData>({
@@ -44,7 +47,6 @@ export function RSVPSection() {
     const urlCode = searchParams.get('code');
     if (urlCode && !code) {
       setCode(urlCode.toUpperCase());
-      // Trigger verification after setting the code
       verifyCodeFromUrl(urlCode.toUpperCase());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,18 +75,23 @@ export function RSVPSection() {
           }
         );
         
+        let fetchedTableLabel: string | null = null;
         if (invitationResponse.ok) {
           const invitationData = await invitationResponse.json();
           setInviteeName(invitationData.inviteeName || '');
           setGroupName(invitationData.groupName || '');
+          fetchedTableLabel = invitationData.tableLabel || null;
+          setTableLabel(fetchedTableLabel);
         }
 
+        let isAttending = false;
         const rsvpResponse = await fetch(
           `/api/rsvp?code=${encodeURIComponent(codeToVerify.trim())}`
         );
         if (rsvpResponse.ok) {
           const rsvpData = await rsvpResponse.json();
           if (rsvpData.rsvp) {
+            isAttending = rsvpData.rsvp.attending === true;
             const foodPrefsArray = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').filter((p: string) => !p.startsWith('Other:')) : [];
             const otherMatch = rsvpData.rsvp.foodPreferences ? rsvpData.rsvp.foodPreferences.split('|').find((p: string) => p.startsWith('Other:')) : '';
             setFormData({
@@ -97,6 +104,11 @@ export function RSVPSection() {
             });
           }
         }
+
+        if (fetchedTableLabel && isAttending) {
+          setShowTablePopup(true);
+        }
+
         setStep('form');
       } else if (data.status === 'disabled') {
         setError('This invitation code has been deactivated. Please contact us for assistance.');
@@ -107,6 +119,7 @@ export function RSVPSection() {
       setError('Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
+      setAutoVerifyDone(true);
     }
   };
 
@@ -236,6 +249,34 @@ export function RSVPSection() {
   };
 
   return (
+    <>
+    {showTablePopup && tableLabel && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 text-center">
+          <div className="text-4xl mb-4">🪑</div>
+          {inviteeName && (
+            <p className="text-lg font-semibold mb-1" style={{ color: '#B18A3D' }}>
+              {t('hiName')}{inviteeName}!
+            </p>
+          )}
+          {groupName && (
+            <p className="text-lg font-semibold mb-3" style={{ color: '#B18A3D' }}>({groupName})</p>
+          )}
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('yourTable')}</h2>
+          <div className="my-4 py-4 px-6 rounded-xl" style={{ backgroundColor: '#F9F3E8', border: '2px solid #B18A3D' }}>
+            <span className="text-5xl font-bold" style={{ color: '#B18A3D' }}>{tableLabel}</span>
+          </div>
+          <p className="text-sm text-gray-500 mb-6">{t('yourTablePopupDesc')}</p>
+          <button
+            onClick={() => setShowTablePopup(false)}
+            className="w-full py-2 px-4 rounded-lg font-medium text-white"
+            style={{ backgroundColor: '#B18A3D' }}
+          >
+            {t('close')}
+          </button>
+        </div>
+      </div>
+    )}
     <Section id="rsvp" className="!pt-3 lg:!pt-5 !pb-3 lg:!pb-5">
       <SectionHeading subtitle={t('rsvpSubtitle')}>
         {t('celebrateWithUs')}
@@ -244,7 +285,13 @@ export function RSVPSection() {
       <div className="max-w-xl mx-auto">
         <Card>
           <CardContent>
-            {step === 'code' && (
+            {/* showCardSpinner: shown only during initial auto-verify, not when user manually navigates back */}
+            {(!!searchParams.get('code') && step === 'code' && !error && !autoVerifyDone) && (
+              <div className="flex justify-center py-8">
+                <LoadingSpinner size="lg" />
+              </div>
+            )}
+            {!showTablePopup && step === 'code' && !(!!searchParams.get('code') && !autoVerifyDone && !error) && (
               <div className="space-y-4">
                 <p className="text-center text-gray-600 mb-6">
                   {t('pleaseEnterCode')}
@@ -268,7 +315,7 @@ export function RSVPSection() {
               </div>
             )}
 
-            {step === 'form' && (
+            {!showTablePopup && step === 'form' && (
               <div className="space-y-4">
                 {inviteeName && (
                   <div className="text-center mb-4">
@@ -444,7 +491,7 @@ export function RSVPSection() {
               </div>
             )}
 
-            {step === 'success' && (
+            {!showTablePopup && step === 'success' && (
               <div className="text-center py-8 space-y-4 relative">
                 {formData.attending && (
                   <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -475,6 +522,12 @@ export function RSVPSection() {
                     ? t('excitedMessage')
                     : t('missYouMessage')}
                 </p>
+                {formData.attending && tableLabel && (
+                  <div className="mt-4 px-6 py-3 rounded-lg inline-block" style={{ backgroundColor: '#F9F3E8', border: '1px solid #B18A3D' }}>
+                    <p className="text-sm font-medium" style={{ color: '#8B6B29' }}>{t('yourTable')}</p>
+                    <p className="text-2xl font-bold mt-1" style={{ color: '#B18A3D' }}>{tableLabel}</p>
+                  </div>
+                )}
                 <div className="mt-6">
                   <Button
                     variant="outline"
@@ -502,5 +555,6 @@ export function RSVPSection() {
         </Card>
       </div>
     </Section>
+    </>
   );
 }

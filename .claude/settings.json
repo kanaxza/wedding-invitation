@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//private/tmp/**)",
+      "Bash(curl -s \"http://localhost:3000/api/invitations/verify?code=HK789FQ2\")",
+      "Bash(agent-browser open:*)",
+      "Bash(agent-browser screenshot:*)",
+      "Bash(agent-browser wait:*)",
+      "Bash(ls ~/.claude/plugins/cache/claude-plugins-official/vercel/*/skills/agent-browser/)",
+      "Read(//usr/local/**)",
+      "Bash(npx --yes playwright test --version)",
+      "Bash(npx playwright:*)",
+      "Bash(node /tmp/test-popup.mjs)",
+      "Bash(node /tmp/analyze-frames.mjs)",
+      "Bash(node /tmp/test-popup4.mjs)",
+      "Bash(curl -s http://localhost:3000/api/invitations/verify?code=HK789FQ2)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)"
+    ]
+  }
+}
