@@ -105,10 +105,6 @@ export function RSVPSection() {
           }
         }
 
-        if (fetchedTableLabel && isAttending) {
-          setShowTablePopup(true);
-        }
-
         setStep('form');
       } else if (data.status === 'disabled') {
         setError('This invitation code has been deactivated. Please contact us for assistance.');

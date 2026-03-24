@@ -14,25 +14,23 @@ export function HeroSection() {
   const [inviteeName, setInviteeName] = useState<string>('');
   const [groupName, setGroupName] = useState<string>('');
   const [tableLabel, setTableLabel] = useState<string>('');
-  const [isAttending, setIsAttending] = useState<boolean>(false);
+  const [showTablePopup, setShowTablePopup] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const code = searchParams.get('code');
     if (code) {
       setIsLoading(true);
-      Promise.all([
-        fetch(`/api/invitations/verify?code=${code}`).then(r => r.json()),
-        fetch(`/api/rsvp?code=${code}`).then(r => r.json()),
-      ])
-        .then(([inviteData, rsvpData]) => {
+      fetch(`/api/invitations/verify?code=${code}`)
+        .then(r => r.json())
+        .then((inviteData) => {
           if (inviteData.ok && inviteData.inviteeName) {
             setInviteeName(inviteData.inviteeName);
             setGroupName(inviteData.groupName || '');
-            setTableLabel(inviteData.tableLabel || '');
-          }
-          if (rsvpData.rsvp && rsvpData.rsvp.attending === true) {
-            setIsAttending(true);
+            if (inviteData.tableLabel) {
+              setTableLabel(inviteData.tableLabel);
+              setShowTablePopup(true);
+            }
           }
         })
         .catch((err) => {
@@ -53,11 +51,40 @@ export function HeroSection() {
 
   return (
     <>
-      {/* Transparent Loading Overlay */}
+      {/* Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 shadow-xl">
             <LoadingSpinner />
+          </div>
+        </div>
+      )}
+
+      {/* Table Label Popup */}
+      {showTablePopup && tableLabel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 text-center">
+            <div className="text-4xl mb-4">🪑</div>
+            {inviteeName && (
+              <p className="text-lg font-semibold mb-1" style={{ color: '#B18A3D' }}>
+                {t('hiName')}{inviteeName}!
+              </p>
+            )}
+            {groupName && (
+              <p className="text-lg font-semibold mb-3" style={{ color: '#B18A3D' }}>({groupName})</p>
+            )}
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('yourTable')}</h2>
+            <div className="my-4 py-4 px-6 rounded-xl" style={{ backgroundColor: '#F9F3E8', border: '2px solid #B18A3D' }}>
+              <span className="text-5xl font-bold" style={{ color: '#B18A3D' }}>{tableLabel}</span>
+            </div>
+            <p className="text-sm text-gray-500 mb-6">{t('yourTablePopupDesc')}</p>
+            <button
+              onClick={() => setShowTablePopup(false)}
+              className="w-full py-2 px-4 rounded-lg font-medium text-white"
+              style={{ backgroundColor: '#B18A3D' }}
+            >
+              {t('close')}
+            </button>
           </div>
         </div>
       )}
@@ -90,7 +117,7 @@ export function HeroSection() {
             {groupName && (
               <p className="text-lg md:text-xl font-semibold" style={{ color: '#B18A3D' }}>({groupName})</p>
             )}
-            {isAttending && tableLabel && (
+            {tableLabel && (
               <div className="inline-flex flex-col items-center mt-2 px-6 py-3 rounded-xl" style={{ backgroundColor: '#F9F3E8', border: '2px solid #B18A3D' }}>
                 <p className="text-xs font-medium uppercase tracking-widest mb-1" style={{ color: '#8B6B29' }}>{t('yourTable')}</p>
                 <p className="text-3xl font-bold" style={{ color: '#B18A3D' }}>{tableLabel}</p>
@@ -109,7 +136,7 @@ export function HeroSection() {
             {groupName && (
               <p className="text-lg md:text-xl font-semibold" style={{ color: '#B18A3D' }}>({groupName})</p>
             )}
-            {isAttending && tableLabel && (
+            {tableLabel && (
               <div className="inline-flex flex-col items-center mt-2 px-6 py-3 rounded-xl" style={{ backgroundColor: '#F9F3E8', border: '2px solid #B18A3D' }}>
                 <p className="text-xs font-medium uppercase tracking-widest mb-1" style={{ color: '#8B6B29' }}>{t('yourTable')}</p>
                 <p className="text-3xl font-bold" style={{ color: '#B18A3D' }}>{tableLabel}</p>
