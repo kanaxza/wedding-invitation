@@ -1,23 +1,13 @@
-import { Navigation } from '@/components/Navigation';
-import { HeroSectionWrapper } from '@/components/HeroSectionWrapper';
-import { DetailsSection } from '@/components/DetailsSection';
+import { WeddingLogo } from '@/components/WeddingLogo';
 import { PhotoGallery } from '@/components/PhotoGallery';
-import { RSVPSectionWrapper } from '@/components/RSVPSectionWrapper';
-import { ContactSection } from '@/components/ContactSection';
-import { Footer } from '@/components/Footer';
-import { LanguageToggle } from '@/components/LanguageToggle';
 
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <Navigation />
-      <HeroSectionWrapper />
-      <DetailsSection />
-      <RSVPSectionWrapper />
+      <div className="flex justify-center py-12">
+        <WeddingLogo className="w-40 h-40 text-stone-600" />
+      </div>
       <PhotoGallery />
-      <ContactSection />
-      <LanguageToggle />
-      <Footer />
     </main>
   );
 }
