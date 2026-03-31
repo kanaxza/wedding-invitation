@@ -1,12 +1,10 @@
 'use client';
 
-import { Section, SectionHeading } from './Section';
+import { Section } from './Section';
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
-import { useLanguage } from '@/lib/LanguageContext';
 
 export function PhotoGallery() {
-  const { t } = useLanguage();
   const [offset, setOffset] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -102,11 +100,7 @@ export function PhotoGallery() {
 
   return (
     <Section id="gallery" className="!pt-3 lg:!pt-5">
-      <SectionHeading subtitle="">
-        {t('ourMoments')}
-      </SectionHeading>
-      
-      <div 
+      <div
         className="max-w-7xl mx-auto overflow-hidden cursor-grab active:cursor-grabbing" 
         ref={containerRef}
         onWheel={handleWheel}
